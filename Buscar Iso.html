@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+        <title>Buscar Iso</title>
+        <link rel="icon" href="livro.png" type="image/png" />
+
+  <head">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="portifolio.css">. <br>
+    
+    <button class="menu-btn" onclick="abrirMenu()">☰</button>
+
+    <nav id="sidebar" class="sidebar">
+      <button class="fechar-btn" onclick="fecharMenu()">×</button>
+
+      <a href="Biblioteca Archieve.html">Biblioteca</a>
+      <a href="Buscar Iso.html">Buscar ISOs/OS</a>
+      <a href="#">Sobre</a>
+    </nav>
+
+    <div id="overlay" class="overlay" onclick="fecharMenu()"></div>
+
+
+  </head>
+  <br><br>
+  
+  <body>
+    <table align="center" width="600" height="700"><th>
+    <form name="formCadastro" method="post" name="formulario" onsubmit="return validarFormulario()">
+      <h1>Informacoes necessarias</h1>
+      <br>
+      <label for="memoria">Memoria :</label>
+      <input type="text" id="memoria" name="memoria" required="" placeholder="Digite aqui a memoria">
+      <br><br>
+      <label for="ghzproc">GHZ de Processador:</label>
+      <input type="number" id="ghzproc" name="ghzproc" required="" placeholder="Digite aqui o GHZ do seu processador">
+      <br><br>
+      <label for="Gerpro">Geração Processador:</label>
+      <input type="number" id="Gerpro" name="Gerpro" required="" placeholder="Digite aqui a Geração do seu Processador">
+      <br><br>
+      <label for="processador">Escolha uma Processador:</label>
+<select id="modproc" name="modproc">
+  <option value="">Processador Modelo</option>
+  <option value="ICU">Intel Core Ultra</option>
+  <option value="IC">Intel Core</option>
+  <option value="">Verificar#</option>
+  <option value="">verificar#</option>
+</select>
+    
+
+      <br><br>
+      <button onclick="validarFormulario()">Cadastra</button>
+      <button type="reset">Resetar</button>
+    </th></table></form>
+  </body>
+
+</html>
+
+<script>
+    function abrirMenu() {
+      document.getElementById("sidebar").classList.add("aberto");
+      document.getElementById("overlay").classList.add("ativo");
+    }
+  
+    function fecharMenu() {
+      document.getElementById("sidebar").classList.remove("aberto");
+      document.getElementById("overlay").classList.remove("ativo");
+    }
+  </script>
