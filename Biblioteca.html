@@ -1,0 +1,167 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Biblioteca Archieve</title>
+    <link rel="icon" href="livro.png" type="image/png" />
+    <link rel="stylesheet" href="biblioteca.css" />
+
+    <button class="menu-btn" onclick="abrirMenu()">☰</button>
+
+    <nav id="sidebar" class="sidebar">
+      <button class="fechar-btn" onclick="fecharMenu()">X</button>
+      <a href="Biblioteca.html">Biblioteca</a>
+      <a href="Buscar Iso.html">Buscar ISOs/OS</a>
+      <a href="#">Sobre</a>
+    </nav>
+
+    <div id="overlay" class="overlay" onclick="fecharMenu()"></div>
+  </head>
+
+  <body class="container-fluid">
+    <main class="catalogo-principal">
+      <header class="cabecalho-biblioteca">
+        <span class="badge">Biblioteca Archieve</span>
+        <h1>Catálogo de ISOs</h1>
+      </header>
+
+      <section id="catalogoResultado" class="catalog-grid"></section>
+    </main>
+  </body>
+</html>
+
+<script>
+  const catalogoISO = [
+    {
+      categoria: "Linux",
+      nome: "Linux Mint",
+      descricao: "Ótimo para uso cotidiano, leve e intuitivo.",
+      requisito: "4 GB RAM",
+      recomendacao: "Ideal para desktop e estudos"
+    },
+    {
+      categoria: "Linux",
+      nome: "Ubuntu",
+      descricao: "Popular, estável e muito utilizado para trabalho e estudos.",
+      requisito: "8 GB RAM",
+      recomendacao: "Muito bom para produtividade"
+    },
+    {
+      categoria: "Linux",
+      nome: "Arch Linux",
+      descricao: "Customizável, voltado para usuários avançados.",
+      requisito: "8 GB RAM",
+      recomendacao: "Perfeito para configuração manual"
+    },
+    {
+      categoria: "Linux",
+      nome: "Kali Linux",
+      descricao: "Focado em testes de segurança e análise técnica.",
+      requisito: "8 GB RAM",
+      recomendacao: "Recomendado para ambiente técnico"
+    },
+    {
+      categoria: "Linux",
+      nome: "Pop!_OS",
+      descricao: "Leve, moderno e ótimo para jogos e produtividade.",
+      requisito: "8 GB RAM",
+      recomendacao: "Excelente para performance geral"
+    },
+    {
+      categoria: "Windows",
+      nome: "Windows XP",
+      descricao: "Versão antiga, indicada para computadores muito antigos.",
+      requisito: "512 MB RAM",
+      recomendacao: "Compatível com hardware legado"
+    },
+    {
+      categoria: "Windows",
+      nome: "Windows 7",
+      descricao: "Compatível com máquinas antigas e uso simples.",
+      requisito: "2 GB RAM",
+      recomendacao: "Bom para uso básico"
+    },
+    {
+      categoria: "Windows",
+      nome: "Windows 8",
+      descricao: "Interface moderna, boa para uso geral.",
+      requisito: "2 GB RAM",
+      recomendacao: "Compatível com setups moderados"
+    },
+    {
+      categoria: "Windows",
+      nome: "Windows 10",
+      descricao: "Versão mais equilibrada entre desempenho e compatibilidade.",
+      requisito: "4 GB RAM",
+      recomendacao: "Excelente para uso geral"
+    },
+    {
+      categoria: "Windows",
+      nome: "Windows 11",
+      descricao: "Versão atual, ideal para hardware recente.",
+      requisito: "8 GB RAM",
+      recomendacao: "Melhor para desempenho moderno"
+    },
+    {
+      categoria: "macOS",
+      nome: "macOS High Sierra",
+      descricao: "Versão clássica da Apple, boa para hardware compatível.",
+      requisito: "4 GB RAM",
+      recomendacao: "Boa para setups compatíveis"
+    },
+    {
+      categoria: "macOS",
+      nome: "macOS Lion",
+      descricao: "Sistema histórico, mais leve e simples.",
+      requisito: "2 GB RAM",
+      recomendacao: "Indicada para uso antigo"
+    },
+    {
+      categoria: "macOS",
+      nome: "macOS M4",
+      descricao: "Versão moderna do ecossistema Apple com melhor desempenho.",
+      requisito: "16 GB RAM",
+      recomendacao: "Ideal para hardware recente"
+    }
+  ];
+
+  function renderCards(cards, memoria = "", ghz = "", geracao = "") {
+    const container = document.getElementById("catalogoResultado");
+    container.innerHTML = cards
+      .map((card) => {
+        const infoPc = memoria || ghz || geracao
+          ? `<li><strong>PC:</strong> ${memoria || "-"} RAM • ${ghz || "-"} GHz • ${geracao || "-"}ª geração</li>`
+          : "";
+
+        return `
+          <article class="catalog-card">
+            <span class="tag">${card.categoria}</span>
+            <h3>${card.nome}</h3>
+            <p>${card.descricao}</p>
+            <ul class="card-info">
+              <li><strong>Requisito:</strong> ${card.requisito}</li>
+              <li><strong>Perfil:</strong> ${card.recomendacao}</li>
+              ${infoPc}
+            </ul>
+            <button type="button" class="mini-btn">Baixar</button>
+          </article>
+        `;
+      })
+      .join("");
+  }
+
+  function abrirMenu() {
+    document.getElementById("sidebar").classList.add("aberto");
+    document.getElementById("overlay").classList.add("ativo");
+  }
+
+  function fecharMenu() {
+    document.getElementById("sidebar").classList.remove("aberto");
+    document.getElementById("overlay").classList.remove("ativo");
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    renderCards(catalogoISO);
+  });
+</script>
+
+ 

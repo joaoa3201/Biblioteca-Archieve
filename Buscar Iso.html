@@ -1,69 +1,307 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-        <title>Buscar Iso</title>
-        <link rel="icon" href="livro.png" type="image/png" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Buscar Iso</title>
+    <link rel="icon" href="livro.png" type="image/png" />
+    <link rel="stylesheet" type="text/css" href="portifolio.css" />
+  </head>
 
-  <head">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="portifolio.css">. <br>
-    
+  <body>
     <button class="menu-btn" onclick="abrirMenu()">☰</button>
 
     <nav id="sidebar" class="sidebar">
       <button class="fechar-btn" onclick="fecharMenu()">×</button>
-
-      <a href="Biblioteca Archieve.html">Biblioteca</a>
+      <a href="Biblioteca.html">Biblioteca</a>
       <a href="Buscar Iso.html">Buscar ISOs/OS</a>
       <a href="#">Sobre</a>
     </nav>
 
     <div id="overlay" class="overlay" onclick="fecharMenu()"></div>
 
+    <main class="page-content">
+      <section class="form-card">
+        <div class="form-header">
+          <span class="badge">Biblioteca Archieve</span>
+          <h1>Informações necessárias</h1>
+        </div>
 
-  </head>
-  <br><br>
-  
-  <body>
-    <table align="center" width="600" height="700"><th>
-    <form name="formCadastro" method="post" name="formulario" onsubmit="return validarFormulario()">
-      <h1>Informacoes necessarias</h1>
-      <br>
-      <label for="memoria">Memoria :</label>
-      <input type="text" id="memoria" name="memoria" required="" placeholder="Digite aqui a memoria">
-      <br><br>
-      <label for="ghzproc">GHZ de Processador:</label>
-      <input type="number" id="ghzproc" name="ghzproc" required="" placeholder="Digite aqui o GHZ do seu processador">
-      <br><br>
-      <label for="Gerpro">Geração Processador:</label>
-      <input type="number" id="Gerpro" name="Gerpro" required="" placeholder="Digite aqui a Geração do seu Processador">
-      <br><br>
-      <label for="processador">Escolha uma Processador:</label>
-<select id="modproc" name="modproc">
-  <option value="">Processador Modelo</option>
-  <option value="ICU">Intel Core Ultra</option>
-  <option value="IC">Intel Core</option>
-  <option value="">Verificar#</option>
-  <option value="">verificar#</option>
-</select>
-    
+        <form id="formBusca" name="formBusca" onsubmit="event.preventDefault(); validarFormulario();">
+          <div class="form-grid">
+            <div class="field">
+              <label for="memoria">Memória</label>
+              <input type="text" id="memoria" name="memoria" required placeholder="Digite aqui a memória" />
+            </div>
 
-      <br><br>
-      <button onclick="validarFormulario()">Cadastra</button>
-      <button type="reset">Resetar</button>
-    </th></table></form>
+            <div class="field">
+              <label for="Mhzproc">MHz/GHz do processador</label>
+              <input type="number" id="Mhzproc" name="mhzproc" required placeholder="Digite o MHz ou GHz do processador" />
+            </div>
+
+            <div class="field">
+              <label for="Gerpro">Geração do processador</label>
+              <input type="number" id="Gerpro" name="Gerpro" required placeholder="Digite a geração do processador" />
+            </div>
+
+            <div class="field">
+              <label for="modproc">Modelo do processador</label>
+              <select id="modproc" name="modproc">
+                <option value="">Selecione o modelo</option>
+                <option value="Intel Core Ultra">Intel Core Ultra</option>
+                <option value="Intel Core">Intel Core</option>
+                <option value="AMD Ryzen">AMD Ryzen</option>
+                <option value="Outro">Outro</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="submit" class="btn btn-primary">Verificar</button>
+            <button type="reset" class="btn btn-secondary">Resetar</button>
+          </div>
+        </form>
+
+        <section class="results-section" id="resultados">
+          <div class="results-header">
+            <h2>Compatibilidade encontrada</h2>
+          </div>
+          <div id="cardsResultado" class="results-grid"></div>
+        </section>
+      </section>
+    </main>
+
+    <script>
+      function abrirMenu() {
+        document.getElementById("sidebar").classList.add("aberto");
+        document.getElementById("overlay").classList.add("ativo");
+      }
+
+      function fecharMenu() {
+        document.getElementById("sidebar").classList.remove("aberto");
+        document.getElementById("overlay").classList.remove("ativo");
+      }
+
+     
+
+      const catalogoISO = [
+        {
+          categoria: "Linux",
+          nome: "Linux Mint",
+          descricao: "Ótimo para uso cotidiano, leve e intuitivo.",
+          requisito: "4 GB RAM",
+          recomendacao: "Ideal para desktop e estudos"
+        },
+        {
+          categoria: "Linux",
+          nome: "Ubuntu",
+          descricao: "Popular, estável e muito utilizado para trabalho e estudos.",
+          requisito: "8 GB RAM",
+          recomendacao: "Muito bom para produtividade"
+        },
+        {
+          categoria: "Linux",
+          nome: "Arch Linux",
+          descricao: "Customizável, voltado para usuários avançados.",
+          requisito: "8 GB RAM",
+          recomendacao: "Perfeito para configuração manual"
+        },
+        {
+          categoria: "Linux",
+          nome: "Kali Linux",
+          descricao: "Focado em testes de segurança e análise técnica.",
+          requisito: "8 GB RAM",
+          recomendacao: "Recomendado para ambiente técnico"
+        },
+        {
+          categoria: "Linux",
+          nome: "Pop!_OS",
+          descricao: "Leve, moderno e ótimo para jogos e produtividade.",
+          requisito: "8 GB RAM",
+          recomendacao: "Excelente para performance geral"
+        },
+        {
+          categoria: "Windows",
+          nome: "Windows XP",
+          descricao: "Versão antiga, indicada para computadores muito antigos.",
+          requisito: "512 MB RAM",
+          recomendacao: "Compatível com hardware legado"
+        },
+        {
+          categoria: "Windows",
+          nome: "Windows 7",
+          descricao: "Compatível com máquinas antigas e uso simples.",
+          requisito: "2 GB RAM",
+          recomendacao: "Bom para uso básico"
+        },
+        {
+          categoria: "Windows",
+          nome: "Windows 8",
+          descricao: "Interface moderna, boa para uso geral.",
+          requisito: "2 GB RAM",
+          recomendacao: "Compatível com setups moderados"
+        },
+        {
+          categoria: "Windows",
+          nome: "Windows 10",
+          descricao: "Versão mais equilibrada entre desempenho e compatibilidade.",
+          requisito: "4 GB RAM",
+          recomendacao: "Excelente para uso geral"
+        },
+        {
+          categoria: "Windows",
+          nome: "Windows 11",
+          descricao: "Versão atual, ideal para hardware recente.",
+          requisito: "8 GB RAM",
+          recomendacao: "Melhor para desempenho moderno"
+        },
+        {
+          categoria: "macOS",
+          nome: "macOS High Sierra",
+          descricao: "Versão clássica da Apple, boa para hardware compatível.",
+          requisito: "4 GB RAM",
+          recomendacao: "Boa para setups compatíveis"
+        },
+        {
+          categoria: "macOS",
+          nome: "macOS Lion",
+          descricao: "Sistema histórico, mais leve e simples.",
+          requisito: "2 GB RAM",
+          recomendacao: "Indicada para uso antigo"
+        },
+        {
+          categoria: "macOS",
+          nome: "macOS M4",
+          descricao: "Versão moderna do ecossistema Apple com melhor desempenho.",
+          requisito: "16 GB RAM",
+          recomendacao: "Ideal para hardware recente"
+        }
+      ];
+
+      function renderCards(cards, memoria = "", ghz = "", geracao = "") {
+        const container = document.getElementById("cardsResultado");
+
+        if (!cards || cards.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <p>Preencha as informações do computador para ver as ISOs que melhor se encaixam no seu perfil.</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = cards
+          .map((card) => {
+            const infoPc = memoria || ghz || geracao
+              ? `<li><strong>PC:</strong> ${memoria || "-"} RAM • ${ghz || "-"} GHz • ${geracao || "-"}ª geração</li>`
+              : "";
+
+            return `
+              <article class="result-card">
+                <span class="tag">${card.categoria}</span>
+                <h3>${card.nome}</h3>
+                <p>${card.descricao}</p>
+                <ul class="card-info">
+                  <li><strong>Requisito:</strong> ${card.requisito}</li>
+                  <li><strong>Perfil:</strong> ${card.recomendacao}</li>
+                  ${infoPc}
+                </ul>
+                <button type="button" class="mini-btn">Baixar</button>
+              </article>
+            `;
+          })
+          .join("");
+      }
+
+      function calcularCompatibilidade(memoria, ghz, geracao, processador) {
+        const memoriaValor = parseInt(memoria, 10) || 0;
+        const processadorTexto = (processador || "").toLowerCase();
+
+        return catalogoISO
+          .map((iso) => {
+            let score = 0;
+            const nome = iso.nome.toLowerCase();
+
+            if (iso.categoria === "Linux") {
+              if (memoriaValor >= 8) score += 4;
+              else if (memoriaValor >= 4) score += 3;
+              else score += 1;
+
+              if (ghz >= 2.5) score += 3;
+              else if (ghz >= 1.5) score += 2;
+              else score += 1;
+
+              if (geracao >= 7) score += 2;
+              else if (geracao >= 4) score += 1;
+            }
+
+            if (iso.categoria === "Windows") {
+              if (memoriaValor >= 4) score += 4;
+              else if (memoriaValor >= 2) score += 3;
+              else score += 1;
+
+              if (ghz >= 2) score += 3;
+              else if (ghz >= 1.5) score += 2;
+              else score += 1;
+
+              if (geracao >= 5) score += 2;
+              else if (geracao >= 2) score += 1;
+            }
+
+            if (iso.categoria === "macOS") {
+              if (memoriaValor >= 8) score += 4;
+              else if (memoriaValor >= 4) score += 3;
+              else score += 1;
+
+              if (ghz >= 3) score += 3;
+              else if (ghz >= 2) score += 2;
+              else score += 1;
+
+              if (geracao >= 8) score += 2;
+              else if (geracao >= 6) score += 1;
+            }
+
+            if (processadorTexto.includes("intel") && (nome.includes("windows") || nome.includes("ubuntu") || nome.includes("mint"))) {
+              score += 2;
+            }
+
+            if (processadorTexto.includes("amd") && (nome.includes("linux") || nome.includes("ubuntu") || nome.includes("mint"))) {
+              score += 2;
+            }
+
+            if (nome.includes("xp") && memoriaValor < 2) score += 2;
+            if (nome.includes("11") && memoriaValor >= 8) score += 3;
+            if (nome.includes("kali") && memoriaValor >= 8) score += 2;
+            if (nome.includes("m4") && memoriaValor >= 16) score += 3;
+
+            return { ...iso, score };
+          })
+          .filter((iso) => iso.score > 0)
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 6);
+      }
+
+      function validarFormulario() {
+        const memoria = document.getElementById("memoria").value.trim();
+        const mhz = Number(document.getElementById("Mhzproc").value);
+        const ghz = mhz >= 1000 ? mhz / 1000 : mhz;
+        const geracao = Number(document.getElementById("Gerpro").value);
+        const processador = document.getElementById("modproc").value || "Não informado";
+
+        if (!memoria || !mhz || !geracao) {
+          return false;
+        }
+
+        const cards = calcularCompatibilidade(memoria, ghz, geracao, processador);
+        renderCards(cards, memoria, ghz.toFixed(1), geracao);
+
+        document.getElementById("resultados").scrollIntoView({ behavior: "smooth", block: "start" });
+        return false;
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        renderCards([]);
+      });
+    </script>
   </body>
-
 </html>
-
-<script>
-    function abrirMenu() {
-      document.getElementById("sidebar").classList.add("aberto");
-      document.getElementById("overlay").classList.add("ativo");
-    }
-  
-    function fecharMenu() {
-      document.getElementById("sidebar").classList.remove("aberto");
-      document.getElementById("overlay").classList.remove("ativo");
-    }
-  </script>
