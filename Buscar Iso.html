@@ -15,7 +15,7 @@
       <button class="fechar-btn" onclick="fecharMenu()">×</button>
       <a href="Biblioteca.html">Biblioteca</a>
       <a href="Buscar Iso.html">Buscar ISOs/OS</a>
-      <a href="#">Sobre</a>
+      <a href="#">agent de IA</a>
     </nav>
 
     <div id="overlay" class="overlay" onclick="fecharMenu()"></div>
@@ -31,22 +31,22 @@
           <div class="form-grid">
             <div class="field">
               <label for="memoria">Memória</label>
-              <input type="text" id="memoria" name="memoria" required placeholder="Digite aqui a memória" />
+              <input type="text" id="memoria" name="memoria" inputmode="numeric" required placeholder="Digite aqui a memória" />
             </div>
 
             <div class="field">
               <label for="Mhzproc">MHz/GHz do processador</label>
-              <input type="number" id="Mhzproc" name="mhzproc" required placeholder="Digite o MHz ou GHz do processador" />
+              <input type="text" id="Mhzproc" name="mhzproc" inputmode="numeric" required placeholder="Digite o MHz ou GHz do processador" />
             </div>
 
             <div class="field">
               <label for="Gerpro">Geração do processador</label>
-              <input type="number" id="Gerpro" name="Gerpro" required placeholder="Digite a geração do processador" />
+              <input type="text" id="Gerpro" name="Gerpro" inputmode="numeric" required placeholder="Digite a geração do processador" />
             </div>
 
             <div class="field">
               <label for="modproc">Modelo do processador</label>
-              <select id="modproc" name="modproc">
+              <select id="modproc" name="modproc" required>
                 <option value="">Selecione o modelo</option>
                 <option value="Intel Core Ultra">Intel Core Ultra</option>
                 <option value="Intel Core">Intel Core</option>
@@ -61,6 +61,11 @@
             <button type="reset" class="btn btn-secondary">Resetar</button>
           </div>
         </form>
+
+        <div id="resumoFinal" class="resumo-final" hidden>
+          <h3>Resumo do formulário</h3>
+          <div class="resumo-lista"></div>
+        </div>
 
         <section class="results-section" id="resultados">
           <div class="results-header">
@@ -82,7 +87,51 @@
         document.getElementById("overlay").classList.remove("ativo");
       }
 
-     
+      function limparFormatoCampo(valor) {
+        return String(valor || "").replace(/[^0-9.]/g, "");
+      }
+
+      function formatarCampo(id, valor) {
+        const numero = limparFormatoCampo(valor);
+
+        if (!numero) return "";
+
+        const mapa = {
+          memoria: "RAM",
+          Mhzproc: "mhz",
+          Gerpro: "°g"
+        };
+
+        return `${numero}${mapa[id] || ""}`;
+      }
+
+      function aplicarFormatoFinalDoCampo(input) {
+        const valor = input.value.trim();
+        const numero = limparFormatoCampo(valor);
+
+        if (!numero) {
+          input.dataset.raw = "";
+          input.value = "";
+          return;
+        }
+
+        input.dataset.raw = numero;
+        input.value = formatarCampo(input.id, numero);
+      }
+
+      function obterValorNumerico(input) {
+        const valor = input?.dataset?.raw ?? limparFormatoCampo(input?.value ?? "");
+        return Number(valor) || 0;
+      }
+
+      document.querySelectorAll("#memoria, #Mhzproc, #Gerpro").forEach((input) => {
+        input.addEventListener("blur", () => aplicarFormatoFinalDoCampo(input));
+        input.addEventListener("input", () => {
+          const valor = limparFormatoCampo(input.value);
+          input.dataset.raw = valor;
+          input.value = valor;
+        });
+      });
 
       const catalogoISO = [
         {
@@ -221,76 +270,134 @@
           .map((iso) => {
             let score = 0;
             const nome = iso.nome.toLowerCase();
+            const categoria = iso.categoria.toLowerCase();
 
-            if (iso.categoria === "Linux") {
-              if (memoriaValor >= 8) score += 4;
-              else if (memoriaValor >= 4) score += 3;
-              else score += 1;
-
-              if (ghz >= 2.5) score += 3;
-              else if (ghz >= 1.5) score += 2;
-              else score += 1;
-
-              if (geracao >= 7) score += 2;
-              else if (geracao >= 4) score += 1;
+            if (nome.includes("windows 11")) {
+              if (memoriaValor >= 8 && ghz >= 2.5 && geracao >= 8) score += 12;
+              else if (memoriaValor >= 8 && ghz >= 2 && geracao >= 7) score += 9;
+              else if (memoriaValor >= 4 && ghz >= 1.8) score += 5;
+              else score -= 3;
             }
 
-            if (iso.categoria === "Windows") {
-              if (memoriaValor >= 4) score += 4;
-              else if (memoriaValor >= 2) score += 3;
-              else score += 1;
-
-              if (ghz >= 2) score += 3;
-              else if (ghz >= 1.5) score += 2;
-              else score += 1;
-
-              if (geracao >= 5) score += 2;
-              else if (geracao >= 2) score += 1;
+            if (nome.includes("windows 10")) {
+              if (memoriaValor >= 4 && ghz >= 1.8 && geracao >= 5) score += 10;
+              else if (memoriaValor >= 2 && ghz >= 1.5) score += 6;
+              else score -= 2;
             }
 
-            if (iso.categoria === "macOS") {
-              if (memoriaValor >= 8) score += 4;
-              else if (memoriaValor >= 4) score += 3;
-              else score += 1;
-
-              if (ghz >= 3) score += 3;
-              else if (ghz >= 2) score += 2;
-              else score += 1;
-
-              if (geracao >= 8) score += 2;
-              else if (geracao >= 6) score += 1;
+            if (nome.includes("windows 8") || nome.includes("windows 7")) {
+              if (memoriaValor >= 2 && ghz >= 1.2 && geracao >= 2) score += 8;
+              else if (memoriaValor >= 1 && ghz >= 1) score += 5;
+              else score -= 1;
             }
 
-            if (processadorTexto.includes("intel") && (nome.includes("windows") || nome.includes("ubuntu") || nome.includes("mint"))) {
+            if (nome.includes("xp")) {
+              if (memoriaValor <= 2 && ghz <= 1.5 && geracao <= 4) score += 9;
+              else score -= 4;
+            }
+
+            if (nome.includes("ubuntu") || nome.includes("mint") || nome.includes("pop")) {
+              if (memoriaValor >= 8 && ghz >= 2.5 && geracao >= 7) score += 10;
+              else if (memoriaValor >= 4 && ghz >= 1.5 && geracao >= 4) score += 8;
+              else if (memoriaValor >= 2 && ghz >= 1) score += 5;
+              else score -= 2;
+            }
+
+            if (nome.includes("arch") || nome.includes("kali")) {
+              if (memoriaValor >= 8 && ghz >= 2.5 && geracao >= 7) score += 11;
+              else if (memoriaValor >= 8 && ghz >= 2) score += 8;
+              else if (memoriaValor >= 4) score += 4;
+              else score -= 2;
+            }
+
+            if (nome.includes("macos m4")) {
+              if (memoriaValor >= 16 && ghz >= 3 && geracao >= 8) score += 12;
+              else if (memoriaValor >= 8 && ghz >= 2.5) score += 7;
+              else score -= 4;
+            }
+
+            if (nome.includes("high") || nome.includes("lion")) {
+              if (memoriaValor >= 4 && ghz >= 1.5 && geracao >= 4) score += 7;
+              else if (memoriaValor >= 2 && ghz >= 1) score += 5;
+              else score -= 1;
+            }
+
+            if (processadorTexto.includes("intel") && (categoria === "windows" || categoria === "linux")) {
               score += 2;
             }
 
-            if (processadorTexto.includes("amd") && (nome.includes("linux") || nome.includes("ubuntu") || nome.includes("mint"))) {
+            if (processadorTexto.includes("amd") && categoria === "linux") {
               score += 2;
             }
 
-            if (nome.includes("xp") && memoriaValor < 2) score += 2;
-            if (nome.includes("11") && memoriaValor >= 8) score += 3;
-            if (nome.includes("kali") && memoriaValor >= 8) score += 2;
-            if (nome.includes("m4") && memoriaValor >= 16) score += 3;
+            if (processadorTexto.includes("core ultra") && nome.includes("windows 11")) {
+              score += 3;
+            }
+
+            if (processadorTexto.includes("intel") && nome.includes("macos")) {
+              score += 1;
+            }
+
+            if (memoriaValor >= 16 && (nome.includes("windows 11") || nome.includes("macos m4") || nome.includes("ubuntu") || nome.includes("mint"))) {
+              score += 2;
+            }
+
+            if (memoriaValor < 4 && (nome.includes("windows 11") || nome.includes("macos m4") || nome.includes("arch") || nome.includes("kali"))) {
+              score -= 3;
+            }
 
             return { ...iso, score };
           })
           .filter((iso) => iso.score > 0)
           .sort((a, b) => b.score - a.score)
-          .slice(0, 6);
+          .slice(0, 5);
+      }
+
+      function mostrarResumoFormulario() {
+        const campos = [
+          { id: "memoria", label: "Memória", placeholder: "Digite aqui a memória" },
+          { id: "Mhzproc", label: "MHz/GHz do processador", placeholder: "Digite o MHz ou GHz do processador" },
+          { id: "Gerpro", label: "Geração do processador", placeholder: "Digite a geração do processador" },
+          { id: "modproc", label: "Modelo do processador", placeholder: "Selecione o modelo", tipo: "select" }
+        ];
+
+        const lista = document.querySelector("#resumoFinal .resumo-lista");
+        lista.innerHTML = campos.map(({ id, label, placeholder, tipo }) => {
+          const campo = document.getElementById(id);
+          const valor = tipo === "select" ? campo.value : (campo.dataset.raw || campo.value.trim());
+          const texto = valor || placeholder;
+
+          return `
+            <div class="resumo-item">
+              <span>${label}</span>
+              <strong>${texto}</strong>
+            </div>
+          `;
+        }).join("");
+
+        document.getElementById("resumoFinal").hidden = false;
       }
 
       function validarFormulario() {
-        const memoria = document.getElementById("memoria").value.trim();
-        const mhz = Number(document.getElementById("Mhzproc").value);
-        const ghz = mhz >= 1000 ? mhz / 1000 : mhz;
-        const geracao = Number(document.getElementById("Gerpro").value);
-        const processador = document.getElementById("modproc").value || "Não informado";
+        const memoriaInput = document.getElementById("memoria");
+        const mhzInput = document.getElementById("Mhzproc");
+        const geracaoInput = document.getElementById("Gerpro");
+        const modeloInput = document.getElementById("modproc");
 
-        if (!memoria || !mhz || !geracao) {
+        const memoria = (memoriaInput.dataset.raw || limparFormatoCampo(memoriaInput.value)).trim();
+        const mhz = Number(obterValorNumerico(mhzInput));
+        const ghz = mhz >= 1000 ? mhz / 1000 : mhz;
+        const geracao = Number(obterValorNumerico(geracaoInput));
+        const processador = modeloInput.value || "";
+
+        if (!memoria || !mhz || !geracao || !processador) {
+          if (!processador) {
+            modeloInput.focus();
+          }
           return false;
         }
+
+        mostrarResumoFormulario();
 
         const cards = calcularCompatibilidade(memoria, ghz, geracao, processador);
         renderCards(cards, memoria, ghz.toFixed(1), geracao);
@@ -299,8 +406,20 @@
         return false;
       }
 
-      document.addEventListener("DOMContentLoaded", () => {
+      function limparResultados() {
         renderCards([]);
+        document.getElementById("resumoFinal").hidden = true;
+        document.querySelector("#resumoFinal .resumo-lista").innerHTML = "";
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        limparResultados();
+      });
+
+      document.getElementById("formBusca").addEventListener("reset", () => {
+        setTimeout(() => {
+          limparResultados();
+        }, 0);
       });
     </script>
   </body>

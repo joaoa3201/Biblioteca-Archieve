@@ -23,6 +23,16 @@ body {
     color: var(--text);
 }
 
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
 .page-content {
     min-height: 100vh;
     display: flex;
@@ -200,6 +210,49 @@ select {
     gap: 14px;
     margin-top: 28px;
     flex-wrap: wrap;
+}
+
+.resumo-final {
+    margin-top: 24px;
+    padding: 18px 20px;
+    border-radius: 18px;
+    background: rgba(15, 15, 15, 0.9);
+    border: 1px solid rgba(214, 17, 17, 0.45);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+}
+
+.resumo-final h3 {
+    margin: 0 0 14px;
+    color: #fff;
+    font-size: 1.1rem;
+}
+
+.resumo-lista {
+    display: grid;
+    gap: 10px;
+}
+
+.resumo-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(214, 17, 17, 0.06);
+    border: 1px solid rgba(214, 17, 17, 0.18);
+}
+
+.resumo-item span {
+    color: var(--text-soft);
+    font-size: 0.9rem;
+}
+
+.resumo-item strong {
+    color: #fff;
+    text-align: right;
+    font-size: 0.92rem;
+    word-break: break-word;
 }
 
 .btn {

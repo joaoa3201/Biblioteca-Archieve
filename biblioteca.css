@@ -16,6 +16,12 @@ body {
     color: var(--text);
 }
 
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
 .container-fluid {
     background: linear-gradient(180deg, #050505 0%, #171717 100%);
     min-height: 100vh;
@@ -286,4 +292,15 @@ div.card-body {
     .catalog-grid {
         grid-template-columns: 1fr;
     }
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: none;
+    appearance: none;
 }
