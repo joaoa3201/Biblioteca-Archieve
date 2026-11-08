@@ -15,9 +15,46 @@
         <h1>Catálogo de ISOs</h1>
       </header>
 
-      <section id="catalogoResultado" class="catalog-grid"></section>
+      <section class="filtros-catalogo" aria-label="Filtros do catálogo">
+        <div class="campo-filtro">
+          <label for="filtroBusca">Buscar por nome</label>
+          <input
+            type="search"
+            id="filtroBusca"
+            name="busca"
+            maxlength="150"
+            autocomplete="off"
+            placeholder="Ex.: Linux Mint"
+          />
+        </div>
+        <div class="campo-filtro">
+          <label for="filtroFamilia">Família do sistema</label>
+          <select id="filtroFamilia" name="familia">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="campo-filtro">
+          <label for="filtroArquitetura">Arquitetura</label>
+          <select id="filtroArquitetura" name="arquitetura">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <label class="filtro-leve" for="filtroLeve">
+          <input type="checkbox" id="filtroLeve" name="leve" />
+          <span>Somente sistemas leves (bom para PCs antigos)</span>
+        </label>
+      </section>
+
+      <p id="contagemResultados" class="contagem-resultados" aria-live="polite"></p>
+      <section
+        id="catalogoResultado"
+        class="catalog-grid"
+        aria-live="polite"
+        aria-busy="true"
+      ></section>
     </main>
     <script src="assets/js/menu.js"></script>
+    <script src="assets/js/api.js"></script>
     <script src="assets/js/biblioteca.js"></script>
   </body>
 </html>

@@ -15,7 +15,7 @@ START TRANSACTION;
 INSERT INTO sistemas_operacionais
   (nome, familia, descricao, perfil_recomendado, leve)
 VALUES
-  ('Linux Mint', 'Linux', 'Ótimo para uso cotidiano, leve e intuitivo.', 'Ideal para desktop e estudos', 1),
+  ('Linux Mint', 'Linux', 'Ótimo para uso cotidiano, leve e intuitivo.', 'Ideal para desktop e estudos', 0),
   ('Ubuntu', 'Linux', 'Popular, estável e muito utilizado para trabalho e estudos.', 'Muito bom para produtividade', 0),
   ('Arch Linux', 'Linux', 'Customizável, voltado para usuários avançados.', 'Perfeito para configuração manual', 0),
   ('Kali Linux', 'Linux', 'Focado em testes de segurança e análise técnica.', 'Recomendado para ambiente técnico', 0),
