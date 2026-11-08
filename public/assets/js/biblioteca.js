@@ -1,37 +1,4 @@
-<!doctype html>
-<html>
-  <head>
-    <title>Biblioteca Archieve</title>
-    <link rel="icon" href="livro.png" type="image/png" />
-    <link rel="stylesheet" href="biblioteca.css" />
-
-    <button class="menu-btn" onclick="abrirMenu()">☰</button>
-
-    <nav id="sidebar" class="sidebar">
-      <button class="fechar-btn" onclick="fecharMenu()">X</button>
-      <a href="Biblioteca.html">Biblioteca</a>
-      <a href="Buscar Iso.html">Buscar ISOs/OS</a>
-      <a href="#">agent de IA
-      </a>
-    </nav>
-
-    <div id="overlay" class="overlay" onclick="fecharMenu()"></div>
-  </head>
-
-  <body class="container-fluid">
-    <main class="catalogo-principal">
-      <header class="cabecalho-biblioteca">
-        <span class="badge">Biblioteca Archieve</span>
-        <h1>Catálogo de ISOs</h1>
-      </header>
-
-      <section id="catalogoResultado" class="catalog-grid"></section>
-    </main>
-  </body>
-</html>
-
-<script>
-  const catalogoISO = [
+const catalogoISO = [
     {
       categoria: "Linux",
       nome: "Linux Mint",
@@ -149,20 +116,6 @@
       })
       .join("");
   }
-
-  function abrirMenu() {
-    document.getElementById("sidebar").classList.add("aberto");
-    document.getElementById("overlay").classList.add("ativo");
-  }
-
-  function fecharMenu() {
-    document.getElementById("sidebar").classList.remove("aberto");
-    document.getElementById("overlay").classList.remove("ativo");
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
     renderCards(catalogoISO);
   });
-</script>
-
- 

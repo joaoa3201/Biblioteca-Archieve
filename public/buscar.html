@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Buscar ISO/OS | Biblioteca Archive</title>
+    <link rel="icon" href="assets/img/livro.png" type="image/png" />
+    <link rel="stylesheet" type="text/css" href="assets/css/style.css" />
+  </head>
+
+  <body class="pagina-busca">
+    <main class="page-content">
+      <section class="form-card">
+        <div class="form-header">
+          <span class="badge">Biblioteca Archive</span>
+          <h1>Informações necessárias</h1>
+        </div>
+
+        <form id="formBusca" name="formBusca" onsubmit="event.preventDefault(); validarFormulario();">
+          <div class="form-grid">
+            <div class="field">
+              <label for="memoria">Memória</label>
+              <input type="text" id="memoria" name="memoria" inputmode="numeric" required placeholder="Digite aqui a memória" />
+            </div>
+
+            <div class="field">
+              <label for="Mhzproc">MHz/GHz do processador</label>
+              <input type="text" id="Mhzproc" name="mhzproc" inputmode="numeric" required placeholder="Digite o MHz ou GHz do processador" />
+            </div>
+
+            <div class="field">
+              <label for="Gerpro">Geração do processador</label>
+              <input type="text" id="Gerpro" name="Gerpro" inputmode="numeric" required placeholder="Digite a geração do processador" />
+            </div>
+
+            <div class="field">
+              <label for="modproc">Modelo do processador</label>
+              <select id="modproc" name="modproc" required>
+                <option value="">Selecione o modelo</option>
+                <option value="Intel Core Ultra">Intel Core Ultra</option>
+                <option value="Intel Core">Intel Core</option>
+                <option value="AMD Ryzen">AMD Ryzen</option>
+                <option value="Outro">Outro</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="submit" class="btn btn-primary">Verificar</button>
+            <button type="reset" class="btn btn-secondary">Resetar</button>
+          </div>
+        </form>
+
+        <div id="resumoFinal" class="resumo-final" hidden>
+          <h3>Resumo do formulário</h3>
+          <div class="resumo-lista"></div>
+        </div>
+
+        <section class="results-section" id="resultados">
+          <div class="results-header">
+            <h2>Compatibilidade encontrada</h2>
+          </div>
+          <div id="cardsResultado" class="results-grid"></div>
+        </section>
+      </section>
+    </main>
+    <script src="assets/js/menu.js"></script>
+    <script src="assets/js/buscar.js"></script>
+  </body>
+</html>
