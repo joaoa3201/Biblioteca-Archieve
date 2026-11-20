@@ -54,7 +54,7 @@ VALUES
   ((SELECT id FROM sistemas_operacionais WHERE nome = 'Lubuntu'), 'LTS atual', 'x64', 4000, 'https://lubuntu.me/downloads/', 1),
   ((SELECT id FROM sistemas_operacionais WHERE nome = 'Xubuntu'), 'LTS atual', 'x64', 4500, 'https://xubuntu.org/download/', 1),
   ((SELECT id FROM sistemas_operacionais WHERE nome = 'antiX'), 'Versão atual', 'x64', 2200, 'https://antixlinux.com/download/', 1),
-  ((SELECT id FROM sistemas_operacionais WHERE nome = 'Puppy Linux'), 'Versão atual', 'x64', 500, NULL, 1),
+  ((SELECT id FROM sistemas_operacionais WHERE nome = 'Puppy Linux'), 'Versão atual', 'x64', 500, 'https://puppylinux-woof-ce.github.io/', 1),
   ((SELECT id FROM sistemas_operacionais WHERE nome = 'Linux Mint XFCE'), 'Versão atual', 'x64', 3500, 'https://linuxmint.com/download.php', 1),
   ((SELECT id FROM sistemas_operacionais WHERE nome = 'Debian XFCE'), 'Versão atual', 'x64', 3900, 'https://www.debian.org/distrib/', 1);
 

@@ -18,7 +18,7 @@ Copie `config/.env.example` para `config/.env` e ajuste as credenciais se necess
 
 O catálogo JavaScript não informa versões, arquitetura, tamanho das imagens ISO nem requisitos de CPU, geração do processador, armazenamento e memória recomendada. Por isso, o seed usa `Não informada no catálogo` como versão para os itens sem versão declarada e traz valores conservadores estimados para esses campos. Para macOS M4, a versão foi mantida conforme o nome informado no catálogo, sem assumir um nome de versão do sistema.
 
-As páginas oficiais de download foram preenchidas somente quando identificadas com segurança. Para XP, Windows 7/8, versões macOS e Puppy Linux, `url_oficial` está `NULL`.
+As páginas oficiais de download foram preenchidas somente quando identificadas com segurança. Para XP, Windows 7/8 e as versões do macOS, `url_oficial` está `NULL`: a Microsoft e a Apple não oferecem mais download público oficial dessas imagens (a página da Microsoft para o Windows 8.1 retorna 404).
 
 ## Teste de conexão
 
