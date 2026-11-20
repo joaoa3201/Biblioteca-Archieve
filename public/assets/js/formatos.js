@@ -30,6 +30,13 @@
     ];
   }
 
+  // Onde o arquivo é obtido: o texto cadastrado ou, se não houver, uma descrição padrão.
+  function textoLocalizacao(iso) {
+    if (iso.localizacao) return iso.localizacao;
+    return iso.tem_link_oficial ? "Site oficial do sistema" : "Não informada";
+  }
+
+  window.textoLocalizacao = textoLocalizacao;
   window.formatarMemoria = formatarMemoria;
   window.formatarProcessador = formatarProcessador;
   window.listarRequisitos = listarRequisitos;

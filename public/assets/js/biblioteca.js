@@ -1,10 +1,11 @@
 /**
  * Página do catálogo: busca as ISOs na API, monta os cards e aplica os filtros
- * (nome, família, arquitetura e "somente leves").
+ * (nome, família, versão, arquitetura e "somente leves").
  */
 document.addEventListener("DOMContentLoaded", () => {
   const campoBusca = document.getElementById("filtroBusca");
   const seletorFamilia = document.getElementById("filtroFamilia");
+  const seletorVersao = document.getElementById("filtroVersao");
   const seletorArquitetura = document.getElementById("filtroArquitetura");
   const checkboxLeve = document.getElementById("filtroLeve");
   const contagem = document.getElementById("contagemResultados");
@@ -15,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let controladorAtual = null;
   let temporizadorBusca = null;
   let filtrosDisponiveis = false;
-  const controles = [campoBusca, seletorFamilia, seletorArquitetura, checkboxLeve];
+  const controles = [campoBusca, seletorFamilia, seletorVersao, seletorArquitetura, checkboxLeve];
   controles.forEach((controle) => {
     controle.disabled = true;
   });
@@ -87,6 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
     informacoes.className = "card-info";
     adicionarItem(informacoes, "Arquitetura", iso.arquitetura);
     adicionarItem(informacoes, "Tamanho", formatarTamanhoIso(iso.tamanho_mb));
+    adicionarItem(informacoes, "Localização", window.textoLocalizacao(iso));
     window.listarRequisitos(iso).forEach(([rotulo, valor]) => adicionarItem(informacoes, rotulo, valor));
     adicionarItem(informacoes, "Perfil recomendado", iso.perfil_recomendado);
 
@@ -125,6 +127,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (seletorFamilia.value) {
       filtros.familia = seletorFamilia.value;
+    }
+    if (seletorVersao.value) {
+      filtros.versao = seletorVersao.value;
     }
     if (seletorArquitetura.value) {
       filtros.arquitetura = seletorArquitetura.value;
@@ -219,6 +224,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function limparFiltros() {
     campoBusca.value = "";
     seletorFamilia.value = "";
+    seletorVersao.value = "";
     seletorArquitetura.value = "";
     checkboxLeve.checked = false;
     carregarIsos();
@@ -247,6 +253,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       preencherOpcoes(seletorFamilia, filtros.familias);
+      preencherOpcoes(seletorVersao, filtros.versoes);
       const arquiteturas = [...new Set(isos.map((iso) => iso.arquitetura))].sort();
       preencherOpcoes(seletorArquitetura, arquiteturas);
       filtrosDisponiveis = true;
@@ -277,6 +284,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   seletorFamilia.addEventListener("change", () => carregarIsos());
+  seletorVersao.addEventListener("change", () => carregarIsos());
   seletorArquitetura.addEventListener("change", () => carregarIsos());
   checkboxLeve.addEventListener("change", () => carregarIsos());
 

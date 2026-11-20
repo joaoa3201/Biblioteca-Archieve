@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   try {
     iso = await window.buscarIso(id);
     titulo.textContent = `Download: ${iso.nome}`;
-    resumo.textContent = `${iso.versao} • ${iso.arquitetura} • ${iso.tamanho_mb} MB`;
+    resumo.textContent = `${iso.versao} • ${iso.arquitetura} • ${iso.tamanho_mb} MB • ${window.textoLocalizacao(iso)}`;
 
     // Requisitos de hardware, para o usuário conferir antes de baixar.
     const listaRequisitos = document.getElementById("listaRequisitos");
@@ -41,6 +41,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       listaRequisitos.append(item);
     });
     document.getElementById("requisitosIso").hidden = false;
+
+    // Código de verificação (SHA-256): permite conferir se o arquivo baixado não foi alterado.
+    if (iso.checksum_sha256) {
+      const checksum = document.getElementById("checksumIso");
+      checksum.textContent = `Código de verificação (SHA-256): ${iso.checksum_sha256}. Use-o para conferir se o arquivo baixado está íntegro.`;
+      checksum.hidden = false;
+    }
 
     if (!iso.tem_link_oficial) {
       resumo.textContent += " — o link oficial desta ISO ainda não está disponível.";

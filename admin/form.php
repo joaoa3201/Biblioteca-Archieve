@@ -18,14 +18,14 @@ $editando = $id !== false && $id !== null && $id > 0;
 // Valores iniciais do formulário (vazios no cadastro, do banco na edição).
 $dados = [
     'nome' => '', 'familia' => 'Linux', 'descricao' => '', 'perfil_recomendado' => '', 'leve' => '0',
-    'versao' => '', 'arquitetura' => 'x64', 'tamanho_mb' => '', 'url_oficial' => '', 'ativo' => '1',
+    'versao' => '', 'arquitetura' => 'x64', 'tamanho_mb' => '', 'url_oficial' => '', 'localizacao_arquivo' => '', 'checksum_sha256' => '', 'ativo' => '1',
     'ram_min_mb' => '', 'ram_rec_mb' => '', 'cpu_ghz_min' => '', 'geracao_cpu_min' => '', 'armazenamento_min_gb' => '',
 ];
 
 if ($editando && $_SERVER['REQUEST_METHOD'] !== 'POST') {
     $consulta = $conexao->prepare('
         SELECT so.nome, so.familia, so.descricao, so.perfil_recomendado, so.leve,
-               i.versao, i.arquitetura, i.tamanho_mb, i.url_oficial, i.ativo,
+               i.versao, i.arquitetura, i.tamanho_mb, i.url_oficial, i.localizacao_arquivo, i.checksum_sha256, i.ativo,
                r.ram_min_mb, r.ram_rec_mb, r.cpu_ghz_min, r.geracao_cpu_min, r.armazenamento_min_gb
         FROM imagens_iso i
         INNER JOIN sistemas_operacionais so ON so.id = i.sistema_id
@@ -82,6 +82,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $erros[] = 'O link oficial deve começar com http:// ou https://.';
     }
 
+    if (mb_strlen($dados['localizacao_arquivo']) > 500) {
+        $erros[] = 'A localização deve ter até 500 caracteres.';
+    }
+    if ($dados['checksum_sha256'] !== '' && !preg_match('/^[0-9a-fA-F]{64}$/', $dados['checksum_sha256'])) {
+        $erros[] = 'O checksum SHA-256 deve ter exatamente 64 caracteres hexadecimais (0-9 e a-f).';
+    }
+
     $inteiros = [
         'tamanho_mb' => ['Tamanho (MB)', 1, 1000000],
         'ram_min_mb' => ['RAM mínima (MB)', 16, 1048576],
@@ -109,6 +116,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $leve = $dados['leve'] === '1' ? 1 : 0;
         $ativo = $dados['ativo'] === '1' ? 1 : 0;
         $urlOficial = $dados['url_oficial'] === '' ? null : $dados['url_oficial'];
+        $localizacao = $dados['localizacao_arquivo'] === '' ? null : $dados['localizacao_arquivo'];
+        $checksum = $dados['checksum_sha256'] === '' ? null : strtolower($dados['checksum_sha256']);
 
         $conexao->beginTransaction();
         try {
@@ -132,11 +141,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $conexao->prepare('
                     UPDATE imagens_iso
-                    SET versao = :versao, arquitetura = :arq, tamanho_mb = :tamanho, url_oficial = :url, ativo = :ativo
+                    SET versao = :versao, arquitetura = :arq, tamanho_mb = :tamanho, url_oficial = :url,
+                        localizacao_arquivo = :local, checksum_sha256 = :checksum, ativo = :ativo
                     WHERE id = :id
                 ')->execute([
                     'versao' => $dados['versao'], 'arq' => $dados['arquitetura'], 'tamanho' => $dados['tamanho_mb'],
-                    'url' => $urlOficial, 'ativo' => $ativo, 'id' => $id,
+                    'url' => $urlOficial, 'local' => $localizacao, 'checksum' => $checksum, 'ativo' => $ativo, 'id' => $id,
                 ]);
 
                 $conexao->prepare('
@@ -166,11 +176,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 $conexao->prepare('
-                    INSERT INTO imagens_iso (sistema_id, versao, arquitetura, tamanho_mb, url_oficial, ativo)
-                    VALUES (:sistema, :versao, :arq, :tamanho, :url, :ativo)
+                    INSERT INTO imagens_iso (sistema_id, versao, arquitetura, tamanho_mb, url_oficial, localizacao_arquivo, checksum_sha256, ativo)
+                    VALUES (:sistema, :versao, :arq, :tamanho, :url, :local, :checksum, :ativo)
                 ')->execute([
                     'sistema' => $sistemaId, 'versao' => $dados['versao'], 'arq' => $dados['arquitetura'],
-                    'tamanho' => $dados['tamanho_mb'], 'url' => $urlOficial, 'ativo' => $ativo,
+                    'tamanho' => $dados['tamanho_mb'], 'url' => $urlOficial, 'local' => $localizacao,
+                    'checksum' => $checksum, 'ativo' => $ativo,
                 ]);
                 $novoId = $conexao->lastInsertId();
 
@@ -250,6 +261,8 @@ iniciar_pagina($editando ? 'Editar ISO' : 'Nova ISO');
         selecao('Arquitetura', 'arquitetura', $dados, ['x86' => 'x86 (32 bits)', 'x64' => 'x64 (64 bits)', 'arm64' => 'arm64']);
         campo('Tamanho (MB)', 'tamanho_mb', $dados, 'number', 'min="1" required');
         campo('Link oficial de download (opcional)', 'url_oficial', $dados, 'url', 'maxlength="500"');
+        campo('Localização do arquivo (opcional, ex.: Site oficial do Ubuntu)', 'localizacao_arquivo', $dados, 'text', 'maxlength="500"');
+        campo('Checksum SHA-256 (opcional, 64 caracteres)', 'checksum_sha256', $dados, 'text', 'maxlength="64" spellcheck="false"');
         selecao('Status', 'ativo', $dados, ['1' => 'Ativa (aparece no site)', '0' => 'Inativa (oculta)']);
         ?>
       </div>

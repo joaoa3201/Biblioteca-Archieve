@@ -11,7 +11,7 @@ e reduzindo o descarte de lixo eletrônico.
 
 | Funcionalidade | Onde |
 |---|---|
-| Biblioteca de ISOs com busca por nome, família e arquitetura | `public/index.html` |
+| Biblioteca de ISOs com busca por nome, família, versão e arquitetura | `public/index.html` |
 | Busca por hardware (RAM, processador, geração) que recomenda ISOs compatíveis | `public/buscar.html` |
 | Formulário antes do download; o link oficial só é liberado depois | `public/download.html` |
 | Assistente de IA consultivo que recomenda ISOs do banco | `public/assistente.html` |
@@ -68,6 +68,8 @@ erDiagram
         enum arquitetura
         int tamanho_mb
         varchar url_oficial
+        varchar localizacao_arquivo
+        char checksum_sha256
         boolean ativo
     }
     requisitos {
@@ -94,7 +96,7 @@ Todas as respostas seguem o formato `{ "sucesso": true, "dados": ..., "erro": nu
 
 | Método | Endpoint | Descrição |
 |---|---|---|
-| GET | `api/isos.php` | Lista ISOs ativas (filtros: `busca`, `familia`, `versao`, `arquitetura`, `leve`) |
+| GET | `api/isos.php` | Lista ISOs ativas (filtros: `busca`, `familia`, `versao`, `arquitetura`, `leve`); inclui localização e checksum |
 | GET | `api/iso.php?id=N` | Dados e requisitos de uma ISO |
 | GET | `api/familias.php` | Famílias e versões disponíveis para os filtros |
 | GET | `api/recomendar.php` | ISOs compatíveis com o hardware (`ram_mb`, `ghz`, `geracao`, `modelo`) |

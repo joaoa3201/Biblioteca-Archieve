@@ -154,6 +154,8 @@ function normalizar_iso(array $iso): array
         'perfil_recomendado' => $iso['perfil_recomendado'],
         'leve' => (bool) $iso['leve'],
         'tem_link_oficial' => (bool) $iso['tem_link_oficial'],
+        'localizacao' => $iso['localizacao'],           // onde o arquivo está (texto livre); pode ser nulo
+        'checksum_sha256' => $iso['checksum_sha256'],   // para o usuário conferir o arquivo baixado; pode ser nulo
         'ram_min_mb' => (int) $iso['ram_min_mb'],
         'ram_rec_mb' => (int) $iso['ram_rec_mb'],
         'cpu_ghz_min' => (float) $iso['cpu_ghz_min'],
@@ -178,6 +180,8 @@ function consulta_base_iso(): string
         i.versao,
         i.arquitetura,
         i.tamanho_mb,
+        i.localizacao_arquivo AS localizacao,
+        i.checksum_sha256,
         so.descricao,
         so.perfil_recomendado,
         so.leve,

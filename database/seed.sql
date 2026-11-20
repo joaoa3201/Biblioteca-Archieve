@@ -85,4 +85,9 @@ VALUES
   ((SELECT i.id FROM imagens_iso i JOIN sistemas_operacionais s ON s.id = i.sistema_id WHERE s.nome = 'Linux Mint XFCE'), 2048, 4096, 1.00, 2, 15),
   ((SELECT i.id FROM imagens_iso i JOIN sistemas_operacionais s ON s.id = i.sistema_id WHERE s.nome = 'Debian XFCE'), 1024, 2048, 1.00, 2, 10);
 
+-- Localização: indica onde o arquivo é obtido (aqui, o domínio do site oficial).
+UPDATE imagens_iso
+SET localizacao_arquivo = CONCAT('Site oficial (', SUBSTRING_INDEX(SUBSTRING_INDEX(url_oficial, '/', 3), '/', -1), ')')
+WHERE url_oficial IS NOT NULL;
+
 COMMIT;

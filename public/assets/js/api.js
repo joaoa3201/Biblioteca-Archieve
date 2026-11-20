@@ -67,7 +67,7 @@
 
   async function buscarIsos(filtros = {}, sinal) {
     const parametros = new URLSearchParams();
-    const camposTexto = ["busca", "familia", "arquitetura"];
+    const camposTexto = ["busca", "familia", "versao", "arquitetura"];
 
     camposTexto.forEach((campo) => {
       const valor = filtros[campo];
