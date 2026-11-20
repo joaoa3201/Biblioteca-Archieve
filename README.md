@@ -96,7 +96,7 @@ Todas as respostas seguem o formato `{ "sucesso": true, "dados": ..., "erro": nu
 |---|---|---|
 | GET | `api/isos.php` | Lista ISOs ativas (filtros: `busca`, `familia`, `versao`, `arquitetura`, `leve`) |
 | GET | `api/iso.php?id=N` | Dados e requisitos de uma ISO |
-| GET | `api/familias.php` | Famílias, versões e arquiteturas para os filtros |
+| GET | `api/familias.php` | Famílias e versões disponíveis para os filtros |
 | GET | `api/recomendar.php` | ISOs compatíveis com o hardware (`ram_mb`, `ghz`, `geracao`, `modelo`) |
 | POST | `api/solicitar_download.php` | Registra o formulário e devolve o link oficial |
 | POST | `api/chat.php` | Conversa com o assistente de IA |
