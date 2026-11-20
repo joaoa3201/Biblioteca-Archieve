@@ -129,12 +129,9 @@ function enviar_json(string $url, array $cabecalhos, array $corpo): array
 
 if ($provedor === 'gemini') {
     // Gemini: o histórico usa os papéis "user" e "model", e o prompt vai em systemInstruction.
-    $modelo = ($config['GEMINI_MODEL'] ?? '') !== '' ? $config['GEMINI_MODEL'] : 'gemini-2.5-flash';
+    $modelo = ($config['GEMINI_MODEL'] ?? '') !== '' ? $config['GEMINI_MODEL'] : 'gemini-flash-lite-latest';
     $url = $config['GEMINI_API_URL'] ?? "https://generativelanguage.googleapis.com/v1beta/models/{$modelo}:generateContent";
-    $geracao = ['maxOutputTokens' => 1024];
-    if (str_contains($modelo, 'flash')) {
-        $geracao['thinkingConfig'] = ['thinkingBudget' => 0]; // respostas diretas, sem gastar cota "pensando"
-    }
+    $geracao = ['maxOutputTokens' => 1024]; // o modelo "lite" responde direto e rápido, adequado a um chat simples
     [$status, $resposta] = enviar_json($url, ['x-goog-api-key: ' . $chave], [
         'systemInstruction' => ['parts' => [['text' => $sistema]]],
         'contents' => array_map(fn (array $m): array => [
