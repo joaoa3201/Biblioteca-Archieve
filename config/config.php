@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Leitor do arquivo config/.env.
+ * Mantém credenciais fora do código-fonte (e do Git): o PHP lê o .env e devolve
+ * um array com as variáveis. Chaves e senhas nunca vão para o JavaScript.
+ */
+
 declare(strict_types=1);
 
 $envPath = __DIR__ . DIRECTORY_SEPARATOR . '.env';
@@ -49,6 +55,7 @@ foreach ($lines as $line) {
     $config[$key] = $value;
 }
 
+// Falha cedo, com mensagem clara, se faltar alguma variável obrigatória.
 foreach (['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASS'] as $requiredKey) {
     if (!array_key_exists($requiredKey, $config)) {
         throw new RuntimeException("A variável {$requiredKey} não foi definida em config/.env.");

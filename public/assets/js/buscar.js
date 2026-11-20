@@ -1,335 +1,210 @@
+/**
+ * Página "Buscar ISO/OS": o usuário informa o hardware do computador e a API
+ * (api/recomendar.php) devolve as ISOs compatíveis, comparando com os
+ * requisitos cadastrados no banco de dados.
+ */
 
+const camposResumo = [
+  { id: "memoria", label: "Memória", placeholder: "Digite aqui a memória" },
+  { id: "Mhzproc", label: "MHz/GHz do processador", placeholder: "Digite o MHz ou GHz do processador" },
+  { id: "Gerpro", label: "Geração do processador", placeholder: "Digite a geração do processador" },
+  { id: "modproc", label: "Modelo do processador", placeholder: "Selecione o modelo", tipo: "select" }
+];
+
+// Mantém só dígitos e ponto, para o campo aceitar apenas números.
 function limparFormatoCampo(valor) {
-        return String(valor || "").replace(/[^0-9.]/g, "");
-      }
+  return String(valor || "").replace(/[^0-9.]/g, "");
+}
 
-      function formatarCampo(id, valor) {
-        const numero = limparFormatoCampo(valor);
+// Acrescenta a unidade ao valor mostrado no campo (ex.: 8 -> "8RAM").
+function formatarCampo(id, valor) {
+  const numero = limparFormatoCampo(valor);
 
-        if (!numero) return "";
+  if (!numero) return "";
 
-        const mapa = {
-          memoria: "RAM",
-          Mhzproc: "mhz",
-          Gerpro: "°g"
-        };
+  const mapa = {
+    memoria: "RAM",
+    Mhzproc: "mhz",
+    Gerpro: "°g"
+  };
 
-        return `${numero}${mapa[id] || ""}`;
-      }
+  return `${numero}${mapa[id] || ""}`;
+}
 
-      function aplicarFormatoFinalDoCampo(input) {
-        const valor = input.value.trim();
-        const numero = limparFormatoCampo(valor);
+// Ao sair do campo, guarda o número puro em data-raw e exibe o valor com unidade.
+function aplicarFormatoFinalDoCampo(input) {
+  const numero = limparFormatoCampo(input.value.trim());
 
-        if (!numero) {
-          input.dataset.raw = "";
-          input.value = "";
-          return;
-        }
+  if (!numero) {
+    input.dataset.raw = "";
+    input.value = "";
+    return;
+  }
 
-        input.dataset.raw = numero;
-        input.value = formatarCampo(input.id, numero);
-      }
+  input.dataset.raw = numero;
+  input.value = formatarCampo(input.id, numero);
+}
 
-      function obterValorNumerico(input) {
-        const valor = input?.dataset?.raw ?? limparFormatoCampo(input?.value ?? "");
-        return Number(valor) || 0;
-      }
+function obterValorNumerico(input) {
+  const valor = input?.dataset?.raw ?? limparFormatoCampo(input?.value ?? "");
+  return Number(valor) || 0;
+}
 
-      document.querySelectorAll("#memoria, #Mhzproc, #Gerpro").forEach((input) => {
-        input.addEventListener("blur", () => aplicarFormatoFinalDoCampo(input));
-        input.addEventListener("input", () => {
-          const valor = limparFormatoCampo(input.value);
-          input.dataset.raw = valor;
-          input.value = valor;
-        });
-      });
+document.querySelectorAll("#memoria, #Mhzproc, #Gerpro").forEach((input) => {
+  input.addEventListener("blur", () => aplicarFormatoFinalDoCampo(input));
+  input.addEventListener("input", () => {
+    const valor = limparFormatoCampo(input.value);
+    input.dataset.raw = valor;
+    input.value = valor;
+  });
+});
 
-      const catalogoISO = [
-        {
-          categoria: "Linux",
-          nome: "Linux Mint",
-          descricao: "Ótimo para uso cotidiano, leve e intuitivo.",
-          requisito: "4 GB RAM",
-          recomendacao: "Ideal para desktop e estudos"
-        },
-        {
-          categoria: "Linux",
-          nome: "Ubuntu",
-          descricao: "Popular, estável e muito utilizado para trabalho e estudos.",
-          requisito: "8 GB RAM",
-          recomendacao: "Muito bom para produtividade"
-        },
-        {
-          categoria: "Linux",
-          nome: "Arch Linux",
-          descricao: "Customizável, voltado para usuários avançados.",
-          requisito: "8 GB RAM",
-          recomendacao: "Perfeito para configuração manual"
-        },
-        {
-          categoria: "Linux",
-          nome: "Kali Linux",
-          descricao: "Focado em testes de segurança e análise técnica.",
-          requisito: "8 GB RAM",
-          recomendacao: "Recomendado para ambiente técnico"
-        },
-        {
-          categoria: "Linux",
-          nome: "Pop!_OS",
-          descricao: "Leve, moderno e ótimo para jogos e produtividade.",
-          requisito: "8 GB RAM",
-          recomendacao: "Excelente para performance geral"
-        },
-        {
-          categoria: "Windows",
-          nome: "Windows XP",
-          descricao: "Versão antiga, indicada para computadores muito antigos.",
-          requisito: "512 MB RAM",
-          recomendacao: "Compatível com hardware legado"
-        },
-        {
-          categoria: "Windows",
-          nome: "Windows 7",
-          descricao: "Compatível com máquinas antigas e uso simples.",
-          requisito: "2 GB RAM",
-          recomendacao: "Bom para uso básico"
-        },
-        {
-          categoria: "Windows",
-          nome: "Windows 8",
-          descricao: "Interface moderna, boa para uso geral.",
-          requisito: "2 GB RAM",
-          recomendacao: "Compatível com setups moderados"
-        },
-        {
-          categoria: "Windows",
-          nome: "Windows 10",
-          descricao: "Versão mais equilibrada entre desempenho e compatibilidade.",
-          requisito: "4 GB RAM",
-          recomendacao: "Excelente para uso geral"
-        },
-        {
-          categoria: "Windows",
-          nome: "Windows 11",
-          descricao: "Versão atual, ideal para hardware recente.",
-          requisito: "8 GB RAM",
-          recomendacao: "Melhor para desempenho moderno"
-        },
-        {
-          categoria: "macOS",
-          nome: "macOS High Sierra",
-          descricao: "Versão clássica da Apple, boa para hardware compatível.",
-          requisito: "4 GB RAM",
-          recomendacao: "Boa para setups compatíveis"
-        },
-        {
-          categoria: "macOS",
-          nome: "macOS Lion",
-          descricao: "Sistema histórico, mais leve e simples.",
-          requisito: "2 GB RAM",
-          recomendacao: "Indicada para uso antigo"
-        },
-        {
-          categoria: "macOS",
-          nome: "macOS M4",
-          descricao: "Versão moderna do ecossistema Apple com melhor desempenho.",
-          requisito: "16 GB RAM",
-          recomendacao: "Ideal para hardware recente"
-        }
-      ];
+// Mostra uma mensagem simples na área de resultados (vazio, carregando ou erro).
+function mostrarMensagem(texto) {
+  const container = document.getElementById("cardsResultado");
+  const estado = document.createElement("div");
+  const paragrafo = document.createElement("p");
 
-      function renderCards(cards, memoria = "", ghz = "", geracao = "") {
-        const container = document.getElementById("cardsResultado");
+  estado.className = "empty-state";
+  estado.setAttribute("role", "status");
+  paragrafo.textContent = texto;
+  estado.append(paragrafo);
+  container.replaceChildren(estado);
+}
 
-        if (!cards || cards.length === 0) {
-          container.innerHTML = `
-            <div class="empty-state">
-              <p>Preencha as informações do computador para ver as ISOs que melhor se encaixam no seu perfil.</p>
-            </div>
-          `;
-          return;
-        }
+function criarItem(rotulo, valor, classe) {
+  const item = document.createElement("li");
+  const negrito = document.createElement("strong");
+  negrito.textContent = `${rotulo}: `;
+  item.append(negrito, valor);
+  if (classe) item.className = classe;
+  return item;
+}
 
-        container.innerHTML = cards
-          .map((card) => {
-            const infoPc = memoria || ghz || geracao
-              ? `<li><strong>PC:</strong> ${memoria || "-"} RAM • ${ghz || "-"} GHz • ${geracao || "-"}ª geração</li>`
-              : "";
+function formatarMemoria(mb) {
+  return mb >= 1024 ? `${mb / 1024} GB` : `${mb} MB`;
+}
 
-            return `
-              <article class="result-card">
-                <span class="tag">${card.categoria}</span>
-                <h3>${card.nome}</h3>
-                <p>${card.descricao}</p>
-                <ul class="card-info">
-                  <li><strong>Requisito:</strong> ${card.requisito}</li>
-                  <li><strong>Perfil:</strong> ${card.recomendacao}</li>
-                  ${infoPc}
-                </ul>
-                <button type="button" class="mini-btn">Baixar</button>
-              </article>
-            `;
-          })
-          .join("");
-      }
+// Monta um card por ISO. Usa textContent (nunca innerHTML) para escapar os dados vindos da API.
+function criarCard(iso) {
+  const card = document.createElement("article");
+  card.className = "result-card";
 
-      function calcularCompatibilidade(memoria, ghz, geracao, processador) {
-        const memoriaValor = parseInt(memoria, 10) || 0;
-        const processadorTexto = (processador || "").toLowerCase();
+  const tag = document.createElement("span");
+  tag.className = "tag";
+  tag.textContent = iso.familia;
 
-        return catalogoISO
-          .map((iso) => {
-            let score = 0;
-            const nome = iso.nome.toLowerCase();
-            const categoria = iso.categoria.toLowerCase();
+  const titulo = document.createElement("h3");
+  titulo.textContent = iso.nome;
 
-            if (nome.includes("windows 11")) {
-              if (memoriaValor >= 8 && ghz >= 2.5 && geracao >= 8) score += 12;
-              else if (memoriaValor >= 8 && ghz >= 2 && geracao >= 7) score += 9;
-              else if (memoriaValor >= 4 && ghz >= 1.8) score += 5;
-              else score -= 3;
-            }
+  const descricao = document.createElement("p");
+  descricao.textContent = iso.descricao;
 
-            if (nome.includes("windows 10")) {
-              if (memoriaValor >= 4 && ghz >= 1.8 && geracao >= 5) score += 10;
-              else if (memoriaValor >= 2 && ghz >= 1.5) score += 6;
-              else score -= 2;
-            }
+  const info = document.createElement("ul");
+  info.className = "card-info";
+  info.append(
+    criarItem("Versão", `${iso.versao} (${iso.arquitetura})`),
+    criarItem("RAM mínima", formatarMemoria(iso.ram_min_mb)),
+    criarItem("RAM recomendada", formatarMemoria(iso.ram_rec_mb)),
+    criarItem(
+      "Compatibilidade",
+      iso.nivel === "ideal" ? "Roda com folga" : "Roda no limite",
+      iso.nivel === "ideal" ? "nivel-ideal" : "nivel-minimo"
+    )
+  );
 
-            if (nome.includes("windows 8") || nome.includes("windows 7")) {
-              if (memoriaValor >= 2 && ghz >= 1.2 && geracao >= 2) score += 8;
-              else if (memoriaValor >= 1 && ghz >= 1) score += 5;
-              else score -= 1;
-            }
+  card.append(tag, titulo, descricao, info);
 
-            if (nome.includes("xp")) {
-              if (memoriaValor <= 2 && ghz <= 1.5 && geracao <= 4) score += 9;
-              else score -= 4;
-            }
+  // O download passa pelo formulário; sem link oficial cadastrado, o botão fica indisponível.
+  const botao = document.createElement("a");
+  botao.className = "mini-btn";
+  if (iso.tem_link_oficial) {
+    botao.href = `download.html?id=${encodeURIComponent(iso.id)}`;
+    botao.textContent = "Baixar";
+  } else {
+    botao.classList.add("mini-btn-indisponivel");
+    botao.setAttribute("aria-disabled", "true");
+    botao.textContent = "Link indisponível";
+  }
+  card.append(botao);
 
-            if (nome.includes("ubuntu") || nome.includes("mint") || nome.includes("pop")) {
-              if (memoriaValor >= 8 && ghz >= 2.5 && geracao >= 7) score += 10;
-              else if (memoriaValor >= 4 && ghz >= 1.5 && geracao >= 4) score += 8;
-              else if (memoriaValor >= 2 && ghz >= 1) score += 5;
-              else score -= 2;
-            }
+  return card;
+}
 
-            if (nome.includes("arch") || nome.includes("kali")) {
-              if (memoriaValor >= 8 && ghz >= 2.5 && geracao >= 7) score += 11;
-              else if (memoriaValor >= 8 && ghz >= 2) score += 8;
-              else if (memoriaValor >= 4) score += 4;
-              else score -= 2;
-            }
+function renderizarResultados(isos) {
+  const container = document.getElementById("cardsResultado");
 
-            if (nome.includes("macos m4")) {
-              if (memoriaValor >= 16 && ghz >= 3 && geracao >= 8) score += 12;
-              else if (memoriaValor >= 8 && ghz >= 2.5) score += 7;
-              else score -= 4;
-            }
+  if (isos.length === 0) {
+    mostrarMensagem("Nenhuma ISO da biblioteca é compatível com esse computador.");
+    return;
+  }
 
-            if (nome.includes("high") || nome.includes("lion")) {
-              if (memoriaValor >= 4 && ghz >= 1.5 && geracao >= 4) score += 7;
-              else if (memoriaValor >= 2 && ghz >= 1) score += 5;
-              else score -= 1;
-            }
+  container.replaceChildren(...isos.map(criarCard));
+}
 
-            if (processadorTexto.includes("intel") && (categoria === "windows" || categoria === "linux")) {
-              score += 2;
-            }
+function mostrarResumoFormulario() {
+  const lista = document.querySelector("#resumoFinal .resumo-lista");
 
-            if (processadorTexto.includes("amd") && categoria === "linux") {
-              score += 2;
-            }
+  lista.replaceChildren(
+    ...camposResumo.map(({ id, label, placeholder, tipo }) => {
+      const campo = document.getElementById(id);
+      const valor = tipo === "select" ? campo.value : (campo.dataset.raw || campo.value.trim());
 
-            if (processadorTexto.includes("core ultra") && nome.includes("windows 11")) {
-              score += 3;
-            }
+      const item = document.createElement("div");
+      item.className = "resumo-item";
+      const rotulo = document.createElement("span");
+      rotulo.textContent = label;
+      const conteudo = document.createElement("strong");
+      conteudo.textContent = valor || placeholder;
+      item.append(rotulo, conteudo);
+      return item;
+    })
+  );
 
-            if (processadorTexto.includes("intel") && nome.includes("macos")) {
-              score += 1;
-            }
+  document.getElementById("resumoFinal").hidden = false;
+}
 
-            if (memoriaValor >= 16 && (nome.includes("windows 11") || nome.includes("macos m4") || nome.includes("ubuntu") || nome.includes("mint"))) {
-              score += 2;
-            }
+async function validarFormulario() {
+  const memoriaInput = document.getElementById("memoria");
+  const mhzInput = document.getElementById("Mhzproc");
+  const geracaoInput = document.getElementById("Gerpro");
+  const modeloInput = document.getElementById("modproc");
 
-            if (memoriaValor < 4 && (nome.includes("windows 11") || nome.includes("macos m4") || nome.includes("arch") || nome.includes("kali"))) {
-              score -= 3;
-            }
+  const memoriaGb = obterValorNumerico(memoriaInput);
+  const mhz = obterValorNumerico(mhzInput);
+  const geracao = obterValorNumerico(geracaoInput);
+  const modelo = modeloInput.value;
 
-            return { ...iso, score };
-          })
-          .filter((iso) => iso.score > 0)
-          .sort((a, b) => b.score - a.score)
-          .slice(0, 5);
-      }
+  if (!memoriaGb || !mhz || !geracao || !modelo) {
+    if (!modelo) modeloInput.focus();
+    return;
+  }
 
-      function mostrarResumoFormulario() {
-        const campos = [
-          { id: "memoria", label: "Memória", placeholder: "Digite aqui a memória" },
-          { id: "Mhzproc", label: "MHz/GHz do processador", placeholder: "Digite o MHz ou GHz do processador" },
-          { id: "Gerpro", label: "Geração do processador", placeholder: "Digite a geração do processador" },
-          { id: "modproc", label: "Modelo do processador", placeholder: "Selecione o modelo", tipo: "select" }
-        ];
+  mostrarResumoFormulario();
+  mostrarMensagem("Buscando ISOs compatíveis...");
+  document.getElementById("resultados").scrollIntoView({ behavior: "smooth", block: "start" });
 
-        const lista = document.querySelector("#resumoFinal .resumo-lista");
-        lista.innerHTML = campos.map(({ id, label, placeholder, tipo }) => {
-          const campo = document.getElementById(id);
-          const valor = tipo === "select" ? campo.value : (campo.dataset.raw || campo.value.trim());
-          const texto = valor || placeholder;
+  try {
+    const isos = await window.recomendarIsos({
+      ramMb: Math.round(memoriaGb * 1024), // o campo é preenchido em GB; o banco guarda em MB
+      ghz: Number((mhz >= 1000 ? mhz / 1000 : mhz).toFixed(2)), // aceita o clock em MHz ou GHz
+      geracao: Math.round(geracao),
+      modelo
+    });
+    renderizarResultados(isos);
+  } catch (erro) {
+    mostrarMensagem(erro.message);
+  }
+}
 
-          return `
-            <div class="resumo-item">
-              <span>${label}</span>
-              <strong>${texto}</strong>
-            </div>
-          `;
-        }).join("");
+function limparResultados() {
+  mostrarMensagem("Preencha as informações do computador para ver as ISOs que melhor se encaixam no seu perfil.");
+  document.getElementById("resumoFinal").hidden = true;
+  document.querySelector("#resumoFinal .resumo-lista").replaceChildren();
+}
 
-        document.getElementById("resumoFinal").hidden = false;
-      }
+document.addEventListener("DOMContentLoaded", limparResultados);
 
-      function validarFormulario() {
-        const memoriaInput = document.getElementById("memoria");
-        const mhzInput = document.getElementById("Mhzproc");
-        const geracaoInput = document.getElementById("Gerpro");
-        const modeloInput = document.getElementById("modproc");
-
-        const memoria = (memoriaInput.dataset.raw || limparFormatoCampo(memoriaInput.value)).trim();
-        const mhz = Number(obterValorNumerico(mhzInput));
-        const ghz = mhz >= 1000 ? mhz / 1000 : mhz;
-        const geracao = Number(obterValorNumerico(geracaoInput));
-        const processador = modeloInput.value || "";
-
-        if (!memoria || !mhz || !geracao || !processador) {
-          if (!processador) {
-            modeloInput.focus();
-          }
-          return false;
-        }
-
-        mostrarResumoFormulario();
-
-        const cards = calcularCompatibilidade(memoria, ghz, geracao, processador);
-        renderCards(cards, memoria, ghz.toFixed(1), geracao);
-
-        document.getElementById("resultados").scrollIntoView({ behavior: "smooth", block: "start" });
-        return false;
-      }
-
-      function limparResultados() {
-        renderCards([]);
-        document.getElementById("resumoFinal").hidden = true;
-        document.querySelector("#resumoFinal .resumo-lista").innerHTML = "";
-      }
-
-      document.addEventListener("DOMContentLoaded", () => {
-        limparResultados();
-      });
-
-      document.getElementById("formBusca").addEventListener("reset", () => {
-        setTimeout(() => {
-          limparResultados();
-        }, 0);
-      });
+document.getElementById("formBusca").addEventListener("reset", () => {
+  setTimeout(limparResultados, 0);
+});

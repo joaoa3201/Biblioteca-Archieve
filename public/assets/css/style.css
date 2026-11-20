@@ -753,3 +753,53 @@ body.pagina-busca .btn {
         width: 100%;
     }
 }
+
+/* Página de download e resultados da busca via API */
+a.mini-btn,
+body.pagina-busca a.btn-link {
+    display: block;
+    text-align: center;
+    text-decoration: none;
+}
+
+.mini-btn-indisponivel {
+    background: #333;
+    color: #bbb;
+    cursor: not-allowed;
+}
+
+body.pagina-busca textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid rgba(214, 17, 17, 0.5);
+    border-radius: 14px;
+    background: rgba(9, 9, 9, 0.9);
+    color: #f8f8f8;
+    font-family: inherit;
+    font-size: 1rem;
+    resize: vertical;
+}
+
+body.pagina-busca textarea:focus {
+    outline: none;
+    border-color: #ff4d4d;
+    box-shadow: 0 0 0 4px rgba(214, 17, 17, 0.18);
+}
+
+body.pagina-busca .texto-apoio {
+    margin: 10px 0 0;
+    color: var(--text-soft);
+}
+
+body.pagina-busca .mensagem-erro {
+    margin: 16px 0 0;
+    color: #ffb3b3;
+}
+
+body.pagina-busca .nivel-ideal {
+    color: #8fe39b;
+}
+
+body.pagina-busca .nivel-minimo {
+    color: #ffd27a;
+}

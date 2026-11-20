@@ -1,3 +1,4 @@
+// Menu lateral compartilhado: é injetado por JavaScript para não repetir o HTML em cada página.
 function abrirMenu() {
   document.getElementById("sidebar").classList.add("aberto");
   document.getElementById("overlay").classList.add("ativo");

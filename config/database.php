@@ -1,7 +1,14 @@
 <?php
 
+/** Conexão com o MySQL via PDO. */
+
 declare(strict_types=1);
 
+/**
+ * Devolve a conexão PDO, criada uma única vez por requisição (padrão singleton).
+ * ERRMODE_EXCEPTION faz erros de SQL virarem exceções, e EMULATE_PREPARES = false
+ * usa prepared statements reais do MySQL.
+ */
 function getConnection(): PDO
 {
     static $connection = null;

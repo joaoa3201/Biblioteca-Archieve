@@ -1,5 +1,12 @@
 <?php
 
+/**
+ * Funções compartilhadas por todos os endpoints da API.
+ *
+ * Padroniza o formato das respostas (JSON com sucesso/dados/erro) e concentra
+ * a validação das entradas, para que nenhum endpoint confie em dados do usuário.
+ */
+
 declare(strict_types=1);
 
 header('Content-Type: application/json; charset=utf-8');
@@ -33,6 +40,7 @@ function exigir_metodo_get(): void
     }
 }
 
+/** Rejeita parâmetros desconhecidos na URL (lista branca). */
 function validar_parametros_permitidos(array $permitidos): void
 {
     foreach (array_keys($_GET) as $parametro) {
@@ -42,6 +50,7 @@ function validar_parametros_permitidos(array $permitidos): void
     }
 }
 
+/** Valida um texto: remove caracteres de controle, aplica limite de tamanho e obrigatoriedade. */
 function validar_string($valor, int $limite, bool $obrigatoria = false): ?string
 {
     if ($valor === null) {
@@ -123,6 +132,7 @@ function validar_enum($valor, array $permitidos): ?string
     return $valor;
 }
 
+/** Abre a conexão com o banco; erros de conexão são tratados em cada endpoint. */
 function obter_conexao_api(): PDO
 {
     require_once __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'database.php';
@@ -130,6 +140,7 @@ function obter_conexao_api(): PDO
     return getConnection();
 }
 
+/** Converte os campos do banco para os tipos corretos (número, booleano) antes de enviar o JSON. */
 function normalizar_iso(array $iso): array
 {
     return [
@@ -149,4 +160,72 @@ function normalizar_iso(array $iso): array
         'geracao_cpu_min' => (int) $iso['geracao_cpu_min'],
         'armazenamento_min_gb' => (int) $iso['armazenamento_min_gb'],
     ];
+}
+
+/**
+ * SQL base que une ISO, sistema operacional e requisitos.
+ * Os endpoints acrescentam apenas o WHERE/ORDER BY, evitando repetir o SELECT.
+ * Obs.: a URL oficial não é exposta; só informamos se ela existe (tem_link_oficial),
+ * pois o link só deve ser liberado depois do formulário de download.
+ */
+function consulta_base_iso(): string
+{
+    return '
+    SELECT
+        i.id,
+        so.nome,
+        so.familia,
+        i.versao,
+        i.arquitetura,
+        i.tamanho_mb,
+        so.descricao,
+        so.perfil_recomendado,
+        so.leve,
+        CASE WHEN i.url_oficial IS NOT NULL AND i.url_oficial <> "" THEN 1 ELSE 0 END AS tem_link_oficial,
+        r.ram_min_mb,
+        r.ram_rec_mb,
+        r.cpu_ghz_min,
+        r.geracao_cpu_min,
+        r.armazenamento_min_gb
+    FROM imagens_iso i
+    INNER JOIN sistemas_operacionais so ON so.id = i.sistema_id
+    INNER JOIN requisitos r ON r.iso_id = i.id
+    WHERE i.ativo = 1
+    ';
+}
+
+/** Valida um número decimal positivo recebido por texto (ex.: "2.4"). */
+function validar_decimal($valor, float $minimo, float $maximo): float
+{
+    if (!is_string($valor) || !preg_match('/^\d+(\.\d+)?$/', $valor)) {
+        erro_json('Parâmetro deve ser um número válido', 400);
+    }
+
+    $decimal = (float) $valor;
+    if ($decimal < $minimo || $decimal > $maximo) {
+        erro_json('Parâmetro numérico fora da faixa permitida', 400);
+    }
+
+    return $decimal;
+}
+
+/** Garante que a requisição use o método POST (usado nos endpoints que gravam dados). */
+function exigir_metodo_post(): void
+{
+    if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+        header('Allow: POST');
+        erro_json('Método não permitido', 405);
+    }
+}
+
+/** Lê o corpo da requisição como JSON e devolve um array (ou erro 400). */
+function ler_corpo_json(): array
+{
+    $corpo = json_decode(file_get_contents('php://input') ?: '', true);
+
+    if (!is_array($corpo)) {
+        erro_json('Corpo da requisição inválido', 400);
+    }
+
+    return $corpo;
 }

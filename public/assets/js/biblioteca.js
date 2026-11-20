@@ -1,3 +1,7 @@
+/**
+ * Página do catálogo: busca as ISOs na API, monta os cards e aplica os filtros
+ * (nome, família, arquitetura e "somente leves").
+ */
 document.addEventListener("DOMContentLoaded", () => {
   const campoBusca = document.getElementById("filtroBusca");
   const seletorFamilia = document.getElementById("filtroFamilia");
@@ -6,6 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const contagem = document.getElementById("contagemResultados");
   const container = document.getElementById("catalogoResultado");
 
+  // O AbortController cancela a requisição anterior quando o usuário muda o filtro rápido.
+  // O temporizador evita chamar a API a cada tecla digitada (debounce).
   let controladorAtual = null;
   let temporizadorBusca = null;
   let filtrosDisponiveis = false;
@@ -99,27 +105,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const areaAcao = document.createElement("div");
     areaAcao.className = "catalog-card-acao";
 
-    const botaoBaixar = document.createElement("button");
-    botaoBaixar.type = "button";
+    // O download passa pelo formulário (download.html); o link só é liberado depois dele.
+    const botaoBaixar = document.createElement("a");
     botaoBaixar.className = "mini-btn";
     botaoBaixar.textContent = "Baixar";
+    if (iso.tem_link_oficial) {
+      botaoBaixar.href = `download.html?id=${encodeURIComponent(iso.id)}`;
+    } else {
+      botaoBaixar.classList.add("mini-btn-indisponivel");
+      botaoBaixar.setAttribute("aria-disabled", "true");
+      botaoBaixar.textContent = "Link indisponível";
+    }
 
-    const avisoDownload = document.createElement("span");
-    avisoDownload.className = "aviso-download";
-    avisoDownload.setAttribute("role", "status");
-    avisoDownload.setAttribute("aria-live", "polite");
-
-    const downloadDisponivel = false;
-    botaoBaixar.addEventListener("click", () => {
-      if (downloadDisponivel) {
-        window.location.href = `download.html?id=${encodeURIComponent(iso.id)}`;
-        return;
-      }
-
-      avisoDownload.textContent = "Em breve";
-    });
-
-    areaAcao.append(botaoBaixar, avisoDownload);
+    areaAcao.append(botaoBaixar);
     card.append(cabecalhoCard, titulo, descricao, informacoes, areaAcao);
     return card;
   }

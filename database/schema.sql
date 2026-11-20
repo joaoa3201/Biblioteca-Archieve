@@ -4,6 +4,7 @@ CREATE DATABASE IF NOT EXISTS biblioteca_archive
 
 USE biblioteca_archive;
 
+-- Sistemas operacionais (ex.: Ubuntu, Windows 10) e suas características gerais.
 CREATE TABLE IF NOT EXISTS sistemas_operacionais (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   nome VARCHAR(150) NOT NULL,
@@ -18,6 +19,7 @@ CREATE TABLE IF NOT EXISTS sistemas_operacionais (
   DEFAULT CHARACTER SET=utf8mb4
   COLLATE=utf8mb4_unicode_ci;
 
+-- Imagens ISO disponíveis: cada ISO pertence a um sistema (relação 1 sistema : N ISOs).
 CREATE TABLE IF NOT EXISTS imagens_iso (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   sistema_id BIGINT UNSIGNED NOT NULL,
@@ -37,6 +39,8 @@ CREATE TABLE IF NOT EXISTS imagens_iso (
   DEFAULT CHARACTER SET=utf8mb4
   COLLATE=utf8mb4_unicode_ci;
 
+-- Requisitos mínimos de hardware de cada ISO (relação 1:1). A recomendação de ISOs
+-- compara o hardware do usuário com estes valores.
 CREATE TABLE IF NOT EXISTS requisitos (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   iso_id BIGINT UNSIGNED NOT NULL,
@@ -53,6 +57,7 @@ CREATE TABLE IF NOT EXISTS requisitos (
   DEFAULT CHARACTER SET=utf8mb4
   COLLATE=utf8mb4_unicode_ci;
 
+-- Registro do formulário preenchido antes de cada download.
 CREATE TABLE IF NOT EXISTS solicitacoes_download (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   iso_id BIGINT UNSIGNED NOT NULL,
@@ -68,6 +73,7 @@ CREATE TABLE IF NOT EXISTS solicitacoes_download (
   DEFAULT CHARACTER SET=utf8mb4
   COLLATE=utf8mb4_unicode_ci;
 
+-- Administradores do painel (senha armazenada apenas como hash).
 CREATE TABLE IF NOT EXISTS usuarios_admin (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   usuario VARCHAR(100) NOT NULL,
