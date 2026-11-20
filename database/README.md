@@ -31,3 +31,18 @@ php database/teste_conexao.php
 Se o comando `php` não estiver no PATH do Windows, use `C:\xampp\php\php.exe database\teste_conexao.php`.
 
 O script é destinado à CLI e informa quantas imagens ISO há por família.
+
+## Painel administrativo
+
+1. Crie o primeiro administrador pelo terminal (a senha é gravada só como hash):
+
+   ```text
+   php database/criar_admin.php meu_usuario minha_senha_forte
+   ```
+
+2. Acesse `http://localhost/Biblioteca-Archieve/admin/` e entre com esse usuário.
+3. No painel é possível cadastrar, editar e excluir ISOs. Uma ISO que já recebeu solicitações de download não é apagada, apenas desativada, para manter o histórico.
+
+## Chatbot (assistente de IA)
+
+O assistente usa a API da Anthropic. Para ativá-lo, crie uma chave em https://console.anthropic.com e preencha `ANTHROPIC_API_KEY` em `config/.env` (veja `config/.env.example`). A chave é lida somente pelo PHP; sem ela, a tela do assistente avisa que ele está indisponível. O uso da API é cobrado à parte.

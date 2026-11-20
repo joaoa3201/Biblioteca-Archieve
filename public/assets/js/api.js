@@ -10,9 +10,10 @@
   const caminhoFamilias = "../api/familias.php";
   const caminhoIso = "../api/iso.php";
   const caminhoRecomendar = "../api/recomendar.php";
+  const caminhoChat = "../api/chat.php";
   const caminhoSolicitarDownload = "../api/solicitar_download.php";
 
-  async function lerResposta(response, recurso) {
+  async function lerResposta(response, recurso, usarMensagemDoServidor = false) {
     let resposta;
 
     try {
@@ -31,7 +32,7 @@
     }
 
     if (!response.ok || !resposta.sucesso) {
-      if (response.status >= 500) {
+      if (response.status >= 500 && !usarMensagemDoServidor) {
         throw new Error(`Não foi possível carregar ${recurso}. Tente novamente.`);
       }
 
@@ -147,6 +148,29 @@
     return dados.url_download;
   }
 
+  // Envia o histórico ao chatbot. Aqui as mensagens de erro do servidor (ex.: "IA não configurada")
+  // são mostradas ao usuário, porque são textos amigáveis escritos para isso.
+  async function enviarMensagemChat(mensagens) {
+    let response;
+    try {
+      response = await fetch(caminhoChat, {
+        method: "POST",
+        headers: { Accept: "application/json", "Content-Type": "application/json" },
+        body: JSON.stringify({ mensagens })
+      });
+    } catch (erro) {
+      throw new Error("Não foi possível conectar ao assistente. Verifique sua conexão e tente novamente.");
+    }
+
+    const dados = await lerResposta(response, "o assistente", true);
+    if (!dados || typeof dados.resposta !== "string" || !Array.isArray(dados.isos)) {
+      throw new Error("A resposta do assistente está inválida. Tente novamente.");
+    }
+
+    return dados;
+  }
+
+  window.enviarMensagemChat = enviarMensagemChat;
   window.buscarIso = buscarIso;
   window.recomendarIsos = recomendarIsos;
   window.solicitarDownload = solicitarDownload;
