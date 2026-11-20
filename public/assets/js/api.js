@@ -134,18 +134,21 @@
     return dados;
   }
 
-  // Envia o formulário que antecede o download; em caso de sucesso, a API devolve o link.
+  // Envia o formulário que antecede o download; em caso de sucesso, a API devolve { tipo, url }.
+  // tipo: "arquivo" (entregue pelo nosso servidor), "direto" (link para o .iso) ou "pagina" (site oficial).
   async function solicitarDownload(solicitacao) {
     const dados = await requisitar(caminhoSolicitarDownload, "o download", undefined, {
       method: "POST",
       headers: { Accept: "application/json", "Content-Type": "application/json" },
       body: JSON.stringify(solicitacao)
     });
-    if (!dados || typeof dados.url_download !== "string") {
+    if (!dados || typeof dados.url_download !== "string" || typeof dados.tipo !== "string") {
       throw new Error("O link de download recebido está inválido. Tente novamente.");
     }
 
-    return dados.url_download;
+    // O caminho do arquivo entregue pelo servidor vem relativo à pasta api/.
+    const url = dados.tipo === "arquivo" ? `../api/${dados.url_download}` : dados.url_download;
+    return { tipo: dados.tipo, url };
   }
 
   // Envia o histórico ao chatbot. Aqui as mensagens de erro do servidor (ex.: "IA não configurada")

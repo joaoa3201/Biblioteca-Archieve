@@ -52,3 +52,21 @@ O assistente funciona com o **Google Gemini**, que tem camada gratuita (mantém 
 3. Pronto: o PHP lê a chave e conversa com o Gemini. A chave nunca vai para o navegador.
 
 Para usar a Anthropic no lugar, preencha `ANTHROPIC_API_KEY`. Se houver as duas chaves, o Gemini é o padrão; use `IA_PROVEDOR=anthropic` para forçar a outra. Sem nenhuma chave, a tela do assistente avisa que ele está indisponível. A camada gratuita do Gemini tem limite de requisições por minuto e por dia, e por isso o site também limita cada visitante a 30 perguntas por hora.
+
+## Entrega do arquivo (download direto)
+
+Depois do formulário, cada ISO é entregue da melhor forma disponível:
+
+1. **Arquivo hospedado:** copie o `.iso` para `storage/isos/` e informe o nome do arquivo no campo "Arquivo hospedado no servidor" do painel admin. O download é entregue pelo PHP (`api/baixar.php`), com token temporário, e a pasta não é acessível diretamente pelo navegador. Os `.iso` não vão para o Git.
+2. **Link direto:** URL do próprio arquivo `.iso` em um site oficial; o navegador começa a baixar sozinho.
+3. **Página oficial:** se não houver nenhum dos dois, o botão leva ao site oficial do sistema.
+
+Para calcular o SHA-256 dos arquivos hospedados e gravar no banco:
+
+```text
+php database/calcular_checksum.php
+```
+
+Bancos criados antes desta funcionalidade precisam importar `database/migracoes/001_download_direto.sql` no phpMyAdmin.
+
+Observação: hospedar arquivos só é adequado para sistemas com licença de redistribuição (a maioria das distribuições Linux). Windows e macOS não podem ser redistribuídos.

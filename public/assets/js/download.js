@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const botaoEnviar = document.getElementById("botaoEnviar");
   const areaLink = document.getElementById("areaLink");
   const linkDownload = document.getElementById("linkDownload");
+  const textoLiberado = document.getElementById("textoLiberado");
 
   const id = Number(new URLSearchParams(window.location.search).get("id"));
   let iso = null;
@@ -49,8 +50,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       checksum.hidden = false;
     }
 
-    if (!iso.tem_link_oficial) {
-      resumo.textContent += " — o link oficial desta ISO ainda não está disponível.";
+    if (!iso.download_disponivel) {
+      resumo.textContent += " — o download desta ISO ainda não está disponível.";
       return;
     }
 
@@ -74,7 +75,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     botaoEnviar.textContent = "Enviando...";
 
     try {
-      const url = await window.solicitarDownload({
+      const { tipo, url } = await window.solicitarDownload({
         iso_id: iso.id,
         nome: formulario.nome.value.trim(),
         email: formulario.email.value.trim(),
@@ -84,6 +85,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       linkDownload.href = url;
       formulario.hidden = true;
       areaLink.hidden = false;
+
+      if (tipo === "pagina") {
+        // Sem arquivo direto: o botão abre a página oficial de download do sistema.
+        textoLiberado.textContent = "Este sistema é baixado na página do site oficial.";
+        linkDownload.textContent = "Ir para o site oficial";
+        linkDownload.target = "_blank";
+        linkDownload.rel = "noopener noreferrer";
+      } else {
+        // Arquivo direto: o download começa sozinho; o botão serve caso o navegador bloqueie.
+        textoLiberado.textContent = "Seu download vai começar automaticamente. Se não começar, use o botão abaixo.";
+        linkDownload.removeAttribute("target");
+        window.location.href = url;
+      }
       linkDownload.focus();
     } catch (erro) {
       mostrarErro(erro.message);

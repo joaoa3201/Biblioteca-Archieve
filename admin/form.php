@@ -18,14 +18,14 @@ $editando = $id !== false && $id !== null && $id > 0;
 // Valores iniciais do formulário (vazios no cadastro, do banco na edição).
 $dados = [
     'nome' => '', 'familia' => 'Linux', 'descricao' => '', 'perfil_recomendado' => '', 'leve' => '0',
-    'versao' => '', 'arquitetura' => 'x64', 'tamanho_mb' => '', 'url_oficial' => '', 'localizacao_arquivo' => '', 'checksum_sha256' => '', 'ativo' => '1',
+    'versao' => '', 'arquitetura' => 'x64', 'tamanho_mb' => '', 'url_oficial' => '', 'url_download_direto' => '', 'arquivo_local' => '', 'localizacao_arquivo' => '', 'checksum_sha256' => '', 'ativo' => '1',
     'ram_min_mb' => '', 'ram_rec_mb' => '', 'cpu_ghz_min' => '', 'geracao_cpu_min' => '', 'armazenamento_min_gb' => '',
 ];
 
 if ($editando && $_SERVER['REQUEST_METHOD'] !== 'POST') {
     $consulta = $conexao->prepare('
         SELECT so.nome, so.familia, so.descricao, so.perfil_recomendado, so.leve,
-               i.versao, i.arquitetura, i.tamanho_mb, i.url_oficial, i.localizacao_arquivo, i.checksum_sha256, i.ativo,
+               i.versao, i.arquitetura, i.tamanho_mb, i.url_oficial, i.url_download_direto, i.arquivo_local, i.localizacao_arquivo, i.checksum_sha256, i.ativo,
                r.ram_min_mb, r.ram_rec_mb, r.cpu_ghz_min, r.geracao_cpu_min, r.armazenamento_min_gb
         FROM imagens_iso i
         INNER JOIN sistemas_operacionais so ON so.id = i.sistema_id
@@ -82,6 +82,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $erros[] = 'O link oficial deve começar com http:// ou https://.';
     }
 
+    if ($dados['url_download_direto'] !== '' && (
+        filter_var($dados['url_download_direto'], FILTER_VALIDATE_URL) === false
+        || !preg_match('#^https?://#i', $dados['url_download_direto'])
+        || mb_strlen($dados['url_download_direto']) > 500
+    )) {
+        $erros[] = 'O link direto deve começar com http:// ou https://.';
+    }
+    if ($dados['arquivo_local'] !== '' && !preg_match('/^[A-Za-z0-9._ -]+\.iso$/', $dados['arquivo_local'])) {
+        $erros[] = 'O arquivo local deve ser apenas o nome do arquivo, terminado em .iso (sem pastas).';
+    }
     if (mb_strlen($dados['localizacao_arquivo']) > 500) {
         $erros[] = 'A localização deve ter até 500 caracteres.';
     }
@@ -116,6 +126,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $leve = $dados['leve'] === '1' ? 1 : 0;
         $ativo = $dados['ativo'] === '1' ? 1 : 0;
         $urlOficial = $dados['url_oficial'] === '' ? null : $dados['url_oficial'];
+        $urlDireto = $dados['url_download_direto'] === '' ? null : $dados['url_download_direto'];
+        $arquivoLocal = $dados['arquivo_local'] === '' ? null : $dados['arquivo_local'];
         $localizacao = $dados['localizacao_arquivo'] === '' ? null : $dados['localizacao_arquivo'];
         $checksum = $dados['checksum_sha256'] === '' ? null : strtolower($dados['checksum_sha256']);
 
@@ -142,11 +154,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $conexao->prepare('
                     UPDATE imagens_iso
                     SET versao = :versao, arquitetura = :arq, tamanho_mb = :tamanho, url_oficial = :url,
+                        url_download_direto = :direto, arquivo_local = :arquivo,
                         localizacao_arquivo = :local, checksum_sha256 = :checksum, ativo = :ativo
                     WHERE id = :id
                 ')->execute([
                     'versao' => $dados['versao'], 'arq' => $dados['arquitetura'], 'tamanho' => $dados['tamanho_mb'],
-                    'url' => $urlOficial, 'local' => $localizacao, 'checksum' => $checksum, 'ativo' => $ativo, 'id' => $id,
+                    'url' => $urlOficial, 'direto' => $urlDireto, 'arquivo' => $arquivoLocal,
+                    'local' => $localizacao, 'checksum' => $checksum, 'ativo' => $ativo, 'id' => $id,
                 ]);
 
                 $conexao->prepare('
@@ -176,12 +190,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 $conexao->prepare('
-                    INSERT INTO imagens_iso (sistema_id, versao, arquitetura, tamanho_mb, url_oficial, localizacao_arquivo, checksum_sha256, ativo)
-                    VALUES (:sistema, :versao, :arq, :tamanho, :url, :local, :checksum, :ativo)
+                    INSERT INTO imagens_iso (sistema_id, versao, arquitetura, tamanho_mb, url_oficial, url_download_direto, arquivo_local,
+                         localizacao_arquivo, checksum_sha256, ativo)
+                    VALUES (:sistema, :versao, :arq, :tamanho, :url, :direto, :arquivo, :local, :checksum, :ativo)
                 ')->execute([
                     'sistema' => $sistemaId, 'versao' => $dados['versao'], 'arq' => $dados['arquitetura'],
-                    'tamanho' => $dados['tamanho_mb'], 'url' => $urlOficial, 'local' => $localizacao,
-                    'checksum' => $checksum, 'ativo' => $ativo,
+                    'tamanho' => $dados['tamanho_mb'], 'url' => $urlOficial, 'direto' => $urlDireto, 'arquivo' => $arquivoLocal,
+                    'local' => $localizacao, 'checksum' => $checksum, 'ativo' => $ativo,
                 ]);
                 $novoId = $conexao->lastInsertId();
 
@@ -222,6 +237,15 @@ function selecao(string $rotulo, string $nome, array $dados, array $opcoes): voi
     echo '</select></div>';
 }
 
+// Avisa se o arquivo informado realmente existe na pasta storage/isos/.
+$statusArquivo = '';
+if ($dados['arquivo_local'] !== '' && preg_match('/^[A-Za-z0-9._ -]+\.iso$/', $dados['arquivo_local'])) {
+    $existe = is_file(__DIR__ . '/../storage/isos/' . $dados['arquivo_local']);
+    $statusArquivo = '<p class="' . ($existe ? 'mensagem-ok' : 'mensagem-erro') . '">'
+        . ($existe ? 'Arquivo encontrado em storage/isos/.' : 'Arquivo ainda não encontrado em storage/isos/: copie o .iso para essa pasta.')
+        . '</p>';
+}
+
 iniciar_pagina($editando ? 'Editar ISO' : 'Nova ISO');
 ?>
 <section class="form-card admin-card">
@@ -260,7 +284,10 @@ iniciar_pagina($editando ? 'Editar ISO' : 'Nova ISO');
         campo('Versão', 'versao', $dados, 'text', 'maxlength="100" required');
         selecao('Arquitetura', 'arquitetura', $dados, ['x86' => 'x86 (32 bits)', 'x64' => 'x64 (64 bits)', 'arm64' => 'arm64']);
         campo('Tamanho (MB)', 'tamanho_mb', $dados, 'number', 'min="1" required');
-        campo('Link oficial de download (opcional)', 'url_oficial', $dados, 'url', 'maxlength="500"');
+        campo('Arquivo hospedado no servidor (opcional, nome do .iso dentro de storage/isos/)', 'arquivo_local', $dados, 'text', 'maxlength="255" spellcheck="false"');
+        echo $statusArquivo;
+        campo('Link direto para o arquivo .iso (opcional)', 'url_download_direto', $dados, 'url', 'maxlength="500"');
+        campo('Página oficial de download (opcional, usada se não houver arquivo nem link direto)', 'url_oficial', $dados, 'url', 'maxlength="500"');
         campo('Localização do arquivo (opcional, ex.: Site oficial do Ubuntu)', 'localizacao_arquivo', $dados, 'text', 'maxlength="500"');
         campo('Checksum SHA-256 (opcional, 64 caracteres)', 'checksum_sha256', $dados, 'text', 'maxlength="64" spellcheck="false"');
         selecao('Status', 'ativo', $dados, ['1' => 'Ativa (aparece no site)', '0' => 'Inativa (oculta)']);

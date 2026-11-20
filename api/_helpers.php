@@ -154,6 +154,10 @@ function normalizar_iso(array $iso): array
         'perfil_recomendado' => $iso['perfil_recomendado'],
         'leve' => (bool) $iso['leve'],
         'tem_link_oficial' => (bool) $iso['tem_link_oficial'],
+        // Direto = o arquivo é entregue pelo próprio site (arquivo local ou link direto para o .iso).
+        'download_direto' => $iso['tem_download_direto'] || caminho_arquivo_iso($iso['arquivo_local']) !== null,
+        'download_disponivel' => $iso['tem_link_oficial'] || $iso['tem_download_direto']
+            || caminho_arquivo_iso($iso['arquivo_local']) !== null,
         'localizacao' => $iso['localizacao'],           // onde o arquivo está (texto livre); pode ser nulo
         'checksum_sha256' => $iso['checksum_sha256'],   // para o usuário conferir o arquivo baixado; pode ser nulo
         'ram_min_mb' => (int) $iso['ram_min_mb'],
@@ -186,6 +190,8 @@ function consulta_base_iso(): string
         so.perfil_recomendado,
         so.leve,
         CASE WHEN i.url_oficial IS NOT NULL AND i.url_oficial <> "" THEN 1 ELSE 0 END AS tem_link_oficial,
+        CASE WHEN i.url_download_direto IS NOT NULL AND i.url_download_direto <> "" THEN 1 ELSE 0 END AS tem_download_direto,
+        i.arquivo_local,
         r.ram_min_mb,
         r.ram_rec_mb,
         r.cpu_ghz_min,
@@ -232,4 +238,22 @@ function ler_corpo_json(): array
     }
 
     return $corpo;
+}
+
+/** Pasta (fora de public/) onde ficam os arquivos .iso hospedados no servidor. */
+const PASTA_ISOS = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'isos';
+
+/**
+ * Devolve o caminho completo do arquivo .iso hospedado, ou null se não houver arquivo válido.
+ * Só aceita um nome simples de arquivo (sem "/" nem ".."), o que impede acessar outras pastas.
+ */
+function caminho_arquivo_iso(?string $nome): ?string
+{
+    if ($nome === null || !preg_match('/^[A-Za-z0-9._ -]+\.iso$/', $nome) || str_contains($nome, '..')) {
+        return null;
+    }
+
+    $caminho = PASTA_ISOS . DIRECTORY_SEPARATOR . $nome;
+
+    return is_file($caminho) && is_readable($caminho) ? $caminho : null;
 }

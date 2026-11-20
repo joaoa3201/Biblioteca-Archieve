@@ -1,1 +1,6 @@
 config/.env
+
+# ISOs hospedadas localmente (arquivos grandes): não vão para o Git
+storage/isos/*
+!storage/isos/.gitkeep
+!storage/isos/.htaccess

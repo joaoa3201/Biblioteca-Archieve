@@ -85,7 +85,7 @@ function criarCard(iso) {
   // O download passa pelo formulário; sem link oficial cadastrado, o botão fica indisponível.
   const botao = document.createElement("a");
   botao.className = "mini-btn";
-  if (iso.tem_link_oficial) {
+  if (iso.download_disponivel) {
     botao.href = `download.html?id=${encodeURIComponent(iso.id)}`;
     botao.textContent = "Baixar";
   } else {

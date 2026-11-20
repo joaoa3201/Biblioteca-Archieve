@@ -5,8 +5,13 @@ declare(strict_types=1);
 /**
  * POST /api/solicitar_download.php
  * Recebe o formulário que antecede o download (iso_id, nome, email, objetivo),
- * registra a solicitação em solicitacoes_download e só então devolve o link
- * oficial da ISO. Assim a URL nunca fica exposta nas demais consultas da API.
+ * registra a solicitação em solicitacoes_download e só então libera o download.
+ * Assim nenhuma URL nem arquivo fica exposto nas demais consultas da API.
+ *
+ * Formas de entrega, em ordem de preferência:
+ *   "arquivo": o .iso está hospedado em storage/isos/ e é entregue por api/baixar.php;
+ *   "direto":  link direto para o arquivo .iso (o navegador começa a baixar);
+ *   "pagina":  página oficial de download do sistema.
  */
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . '_helpers.php';
@@ -30,8 +35,10 @@ if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
 try {
     $conexao = obter_conexao_api();
 
-    // Só aceita ISOs ativas; a URL é buscada aqui, no servidor.
-    $consulta = $conexao->prepare('SELECT url_oficial FROM imagens_iso WHERE id = :id AND ativo = 1');
+    // Só aceita ISOs ativas; as URLs e o arquivo são buscados aqui, no servidor.
+    $consulta = $conexao->prepare('
+        SELECT url_oficial, url_download_direto, arquivo_local FROM imagens_iso WHERE id = :id AND ativo = 1
+    ');
     $consulta->execute(['id' => $isoId]);
     $iso = $consulta->fetch();
 
@@ -39,8 +46,18 @@ try {
         erro_json('ISO não encontrada', 404);
     }
 
-    if ($iso['url_oficial'] === null || $iso['url_oficial'] === '') {
-        erro_json('O link oficial desta ISO ainda não está disponível', 409);
+    // Escolhe a melhor forma de entrega disponível para esta ISO.
+    $tipo = null;
+    if (caminho_arquivo_iso($iso['arquivo_local']) !== null) {
+        $tipo = 'arquivo';
+    } elseif (!empty($iso['url_download_direto'])) {
+        $tipo = 'direto';
+    } elseif (!empty($iso['url_oficial'])) {
+        $tipo = 'pagina';
+    }
+
+    if ($tipo === null) {
+        erro_json('O download desta ISO ainda não está disponível', 409);
     }
 
     $insercao = $conexao->prepare('
@@ -55,7 +72,22 @@ try {
         'ip' => substr($_SERVER['REMOTE_ADDR'] ?? '0.0.0.0', 0, 45),
     ]);
 
-    responder_json(['url_download' => $iso['url_oficial']], 201);
+    if ($tipo === 'arquivo') {
+        // Token aleatório guardado na sessão: vale 15 minutos e só serve para esta ISO.
+        session_start();
+        $token = bin2hex(random_bytes(24));
+        $_SESSION['downloads'] = array_filter(
+            $_SESSION['downloads'] ?? [],
+            fn (array $permissao): bool => $permissao['expira'] > time()
+        );
+        $_SESSION['downloads'][$token] = ['iso_id' => $isoId, 'expira' => time() + 900];
+        session_write_close();
+        $url = 'baixar.php?token=' . $token;
+    } else {
+        $url = $tipo === 'direto' ? $iso['url_download_direto'] : $iso['url_oficial'];
+    }
+
+    responder_json(['tipo' => $tipo, 'url_download' => $url], 201);
 } catch (Throwable $erro) {
     error_log('Falha ao registrar solicitação de download: ' . $erro->getMessage());
     erro_json('Erro interno', 500);

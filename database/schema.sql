@@ -26,7 +26,9 @@ CREATE TABLE IF NOT EXISTS imagens_iso (
   versao VARCHAR(100) NOT NULL,
   arquitetura ENUM('x86', 'x64', 'arm64') NOT NULL,
   tamanho_mb INT UNSIGNED NOT NULL,
-  url_oficial VARCHAR(500) NULL,
+  url_oficial VARCHAR(500) NULL,            -- página oficial do sistema
+  url_download_direto VARCHAR(500) NULL,    -- link direto para o arquivo .iso (inicia o download)
+  arquivo_local VARCHAR(255) NULL,          -- nome do .iso guardado em storage/isos/ (entregue pelo PHP)
   localizacao_arquivo VARCHAR(500) NULL,
   checksum_sha256 CHAR(64) NULL,
   ativo BOOLEAN NOT NULL DEFAULT 1,

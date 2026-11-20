@@ -13,7 +13,7 @@ e reduzindo o descarte de lixo eletrônico.
 |---|---|
 | Biblioteca de ISOs com busca por nome, família, versão e arquitetura | `public/index.html` |
 | Busca por hardware (RAM, processador, geração) que recomenda ISOs compatíveis | `public/buscar.html` |
-| Formulário antes do download; o link oficial só é liberado depois | `public/download.html` |
+| Formulário antes do download; depois, o arquivo é entregue direto (hospedado no servidor ou link direto) | `public/download.html` |
 | Assistente de IA consultivo que recomenda ISOs do banco | `public/assistente.html` |
 | Painel administrativo (login e cadastro, edição e exclusão de ISOs) | `admin/` |
 
@@ -31,7 +31,8 @@ e reduzindo o descarte de lixo eletrônico.
 admin/      Painel administrativo (PHP renderizado no servidor)
 api/        Endpoints JSON consumidos pelo front-end
 config/     Leitura do .env e conexão com o banco
-database/   schema.sql, seed.sql, scripts de apoio e documentação do banco
+database/   schema.sql, seed.sql, migrações, scripts de apoio e documentação do banco
+storage/    Arquivos .iso hospedados no servidor (fora de public/, entregues só pelo PHP)
 public/     Páginas, CSS, JavaScript e imagens
 ```
 
@@ -100,7 +101,8 @@ Todas as respostas seguem o formato `{ "sucesso": true, "dados": ..., "erro": nu
 | GET | `api/iso.php?id=N` | Dados e requisitos de uma ISO |
 | GET | `api/familias.php` | Famílias e versões disponíveis para os filtros |
 | GET | `api/recomendar.php` | ISOs compatíveis com o hardware (`ram_mb`, `ghz`, `geracao`, `modelo`) |
-| POST | `api/solicitar_download.php` | Registra o formulário e devolve o link oficial |
+| POST | `api/solicitar_download.php` | Registra o formulário e libera o download (arquivo, link direto ou página oficial) |
+| GET | `api/baixar.php?token=...` | Entrega o `.iso` hospedado em `storage/isos/` (token válido por 15 min; aceita retomar o download) |
 | POST | `api/chat.php` | Conversa com o assistente de IA |
 
 ## Segurança

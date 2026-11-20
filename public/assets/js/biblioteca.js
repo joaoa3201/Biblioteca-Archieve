@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const botaoBaixar = document.createElement("a");
     botaoBaixar.className = "mini-btn";
     botaoBaixar.textContent = "Baixar";
-    if (iso.tem_link_oficial) {
+    if (iso.download_disponivel) {
       botaoBaixar.href = `download.html?id=${encodeURIComponent(iso.id)}`;
     } else {
       botaoBaixar.classList.add("mini-btn-indisponivel");
