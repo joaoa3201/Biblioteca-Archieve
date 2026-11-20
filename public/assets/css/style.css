@@ -885,3 +885,92 @@ body.pagina-busca .nivel-minimo {
     opacity: 0.6;
     cursor: wait;
 }
+
+/* ===== Acessibilidade ===== */
+
+/* Link "Pular para o conteúdo": invisível até receber foco pelo teclado. */
+.pular-conteudo {
+    position: fixed;
+    top: -60px;
+    left: 80px;
+    z-index: 2000;
+    padding: 10px 16px;
+    border-radius: 10px;
+    background: #fff;
+    color: #000;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.pular-conteudo:focus {
+    top: 12px;
+}
+
+/* Contorno de foco visível em todos os elementos interativos (navegação por teclado). */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+    outline: 3px solid #ffb3b3;
+    outline-offset: 3px;
+}
+
+#conteudo-principal:focus {
+    outline: none;
+}
+
+/* Menu fechado fica fora da ordem de Tab e some para leitores de tela. */
+.sidebar:not(.aberto) {
+    visibility: hidden;
+    transition: left 0.3s ease, visibility 0s linear 0.3s;
+}
+
+.fechar-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 44px;
+    height: 44px;
+    border: 1px solid rgba(220, 38, 38, 0.7);
+    border-radius: 10px;
+    background: transparent;
+    color: #fff;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.sidebar a[aria-current="page"] {
+    border-left-color: var(--red-main);
+    background: rgba(220, 38, 38, 0.18);
+    font-weight: 700;
+}
+
+/* Dicas sob os campos e textos de apoio com contraste suficiente. */
+body.pagina-busca .dica-campo {
+    color: #d1d1d1;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+body.pagina-busca .texto-apoio a {
+    color: #ffb3b3;
+}
+
+body.pagina-busca .subtitulo-requisitos {
+    margin: 0 0 14px;
+    color: #fff;
+    font-size: 1.1rem;
+}
+
+/* Quem prefere menos movimento no sistema não vê animações. */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
+}

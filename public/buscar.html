@@ -16,27 +16,39 @@
           <h1>Informações necessárias</h1>
         </div>
 
-        <form id="formBusca" name="formBusca" onsubmit="event.preventDefault(); validarFormulario();">
+        <form id="formBusca" name="formBusca" onsubmit="event.preventDefault(); validarFormulario();" novalidate>
+          <p class="texto-apoio">
+            Não sabe essas informações? No Windows, abra o Menu Iniciar, digite
+            <strong>Sistema</strong> e abra "Sobre". Ou use o
+            <a href="assistente.html">Assistente de IA</a>, que pergunta por você.
+          </p>
+
           <div class="form-grid">
             <div class="field">
-              <label for="memoria">Memória</label>
-              <input type="text" id="memoria" name="memoria" inputmode="numeric" required placeholder="Digite aqui a memória" />
+              <label for="memoria">Memória RAM (em GB)</label>
+              <input type="text" id="memoria" name="memoria" inputmode="decimal" required
+                aria-describedby="dicaMemoria" placeholder="Exemplo: 4" autocomplete="off" />
+              <small id="dicaMemoria" class="dica-campo">É a memória do computador. Valores comuns: 2, 4, 8 ou 16.</small>
             </div>
 
             <div class="field">
-              <label for="Mhzproc">MHz/GHz do processador</label>
-              <input type="text" id="Mhzproc" name="mhzproc" inputmode="numeric" required placeholder="Digite o MHz ou GHz do processador" />
+              <label for="Mhzproc">Velocidade do processador (GHz ou MHz)</label>
+              <input type="text" id="Mhzproc" name="mhzproc" inputmode="decimal" required
+                aria-describedby="dicaVelocidade" placeholder="Exemplo: 2,4 (GHz) ou 2400 (MHz)" autocomplete="off" />
+              <small id="dicaVelocidade" class="dica-campo">Aparece junto ao nome do processador, como "2.40 GHz".</small>
             </div>
 
             <div class="field">
-              <label for="Gerpro">Geração do processador</label>
-              <input type="text" id="Gerpro" name="Gerpro" inputmode="numeric" required placeholder="Digite a geração do processador" />
+              <label for="Gerpro">Geração do processador (número)</label>
+              <input type="text" id="Gerpro" name="Gerpro" inputmode="numeric" required
+                aria-describedby="dicaGeracao" placeholder="Exemplo: 4" autocomplete="off" />
+              <small id="dicaGeracao" class="dica-campo">Em "Intel Core i5-4200U", a geração é o primeiro número depois do traço (4). Se não souber, use um palpite pelo ano do computador.</small>
             </div>
 
             <div class="field">
-              <label for="modproc">Modelo do processador</label>
+              <label for="modproc">Marca do processador</label>
               <select id="modproc" name="modproc" required>
-                <option value="">Selecione o modelo</option>
+                <option value="">Selecione a marca</option>
                 <option value="Intel Core Ultra">Intel Core Ultra</option>
                 <option value="Intel Core">Intel Core</option>
                 <option value="AMD Ryzen">AMD Ryzen</option>
@@ -45,14 +57,16 @@
             </div>
           </div>
 
+          <p id="erroBusca" class="mensagem-erro" role="alert" hidden></p>
+
           <div class="actions">
             <button type="submit" class="btn btn-primary">Verificar</button>
-            <button type="reset" class="btn btn-secondary">Resetar</button>
+            <button type="reset" class="btn btn-secondary">Limpar</button>
           </div>
         </form>
 
         <div id="resumoFinal" class="resumo-final" hidden>
-          <h3>Resumo do formulário</h3>
+          <h2 class="subtitulo-requisitos">Resumo do que você informou</h2>
           <div class="resumo-lista"></div>
         </div>
 
@@ -60,11 +74,12 @@
           <div class="results-header">
             <h2>Compatibilidade encontrada</h2>
           </div>
-          <div id="cardsResultado" class="results-grid"></div>
+          <div id="cardsResultado" class="results-grid" aria-live="polite"></div>
         </section>
       </section>
     </main>
     <script src="assets/js/menu.js"></script>
+    <script src="assets/js/formatos.js"></script>
     <script src="assets/js/api.js"></script>
     <script src="assets/js/buscar.js"></script>
   </body>

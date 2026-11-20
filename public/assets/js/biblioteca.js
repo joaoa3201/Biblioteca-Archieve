@@ -40,16 +40,6 @@ document.addEventListener("DOMContentLoaded", () => {
     valores.forEach((valor) => adicionarOpcao(seletor, valor, valor));
   }
 
-  function formatarMemoria(valorMb) {
-    if (valorMb < 1024) {
-      return `${valorMb} MB`;
-    }
-
-    return `${new Intl.NumberFormat("pt-BR", {
-      maximumFractionDigits: 1
-    }).format(valorMb / 1024)} GB`;
-  }
-
   function formatarTamanhoIso(valorMb) {
     if (valorMb < 1024) {
       return `${valorMb} MB`;
@@ -97,9 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
     informacoes.className = "card-info";
     adicionarItem(informacoes, "Arquitetura", iso.arquitetura);
     adicionarItem(informacoes, "Tamanho", formatarTamanhoIso(iso.tamanho_mb));
-    adicionarItem(informacoes, "RAM mínima", formatarMemoria(iso.ram_min_mb));
-    adicionarItem(informacoes, "RAM recomendada", formatarMemoria(iso.ram_rec_mb));
-    adicionarItem(informacoes, "Armazenamento", `${iso.armazenamento_min_gb} GB`);
+    window.listarRequisitos(iso).forEach(([rotulo, valor]) => adicionarItem(informacoes, rotulo, valor));
     adicionarItem(informacoes, "Perfil recomendado", iso.perfil_recomendado);
 
     const areaAcao = document.createElement("div");

@@ -10,8 +10,11 @@ declare(strict_types=1);
  * Corpo: { "mensagens": [ { "papel": "user" | "assistant", "texto": "..." } ] }
  * Resposta: { "resposta": "texto", "isos": [ { "id": 1, "nome": "Ubuntu" } ] }
  *
- * A chave de API fica só em config/.env (ANTHROPIC_API_KEY) e é lida aqui, no PHP;
- * o navegador nunca a vê. Como o modelo só enxerga as ISOs do catálogo enviado no
+ * Provedores de IA suportados (escolhidos pela chave presente em config/.env):
+ *   - Google Gemini (GEMINI_API_KEY): tem camada gratuita, é a opção sem custo;
+ *   - Anthropic Claude (ANTHROPIC_API_KEY): pago.
+ * Se as duas chaves existirem, vale IA_PROVEDOR (gemini ou anthropic); sem ele, usa o Gemini.
+ * As chaves ficam só no .env e são lidas aqui, no PHP; o navegador nunca as vê. Como o modelo só enxerga as ISOs do catálogo enviado no
  * prompt, ele recomenda apenas sistemas que realmente existem na biblioteca.
  */
 
@@ -24,8 +27,11 @@ const LIMITE_POR_HORA = 30;        // proteção simples contra abuso (cobra-se 
 exigir_metodo_post();
 $config = require __DIR__ . '/../config/config.php';
 
-$chave = $config['ANTHROPIC_API_KEY'] ?? '';
-if ($chave === '') {
+$chaveGemini = $config['GEMINI_API_KEY'] ?? '';
+$chaveAnthropic = $config['ANTHROPIC_API_KEY'] ?? '';
+$provedor = ($config['IA_PROVEDOR'] ?? '') !== '' ? $config['IA_PROVEDOR'] : ($chaveGemini !== '' ? 'gemini' : 'anthropic');
+$chave = $provedor === 'gemini' ? $chaveGemini : $chaveAnthropic;
+if (!in_array($provedor, ['gemini', 'anthropic'], true) || $chave === '') {
     erro_json('O assistente ainda não foi configurado pelo administrador.', 503);
 }
 
@@ -94,34 +100,63 @@ $sistema = "Você é o assistente da Biblioteca Archive, um site que ajuda pesso
     . "- Responda também dúvidas simples sobre o que é uma ISO e como instalar (gravar em pendrive e iniciar o computador por ele), sem sair desse tema.\n\n"
     . "ISOs disponíveis na biblioteca:\n" . implode("\n", $linhas);
 
-// ---- Chamada à API da Anthropic ----
-$url = $config['ANTHROPIC_API_URL'] ?? 'https://api.anthropic.com/v1/messages';
-$requisicao = json_encode([
-    'model' => $config['ANTHROPIC_MODEL'] ?? 'claude-haiku-5-5',
-    'max_tokens' => 700,
-    'system' => $sistema,
-    'messages' => $mensagens,
-], JSON_UNESCAPED_UNICODE);
+// ---- Chamada à API de IA ----
+/**
+ * Envia uma requisição POST em JSON e devolve [status HTTP, corpo decodificado].
+ * Usa streams do PHP (file_get_contents) em vez de cURL, para não depender de extensão extra no XAMPP.
+ */
+function enviar_json(string $url, array $cabecalhos, array $corpo): array
+{
+    $contexto = stream_context_create(['http' => [
+        'method' => 'POST',
+        'header' => array_merge(['content-type: application/json'], $cabecalhos),
+        'content' => json_encode($corpo, JSON_UNESCAPED_UNICODE),
+        'timeout' => 40,
+        'ignore_errors' => true, // devolve o corpo mesmo em respostas 4xx/5xx, para podermos registrar o erro
+    ]]);
+    $retorno = @file_get_contents($url, false, $contexto);
+    $status = 0;
+    if (isset($http_response_header[0]) && preg_match('#\s(\d{3})\s#', $http_response_header[0], $m)) {
+        $status = (int) $m[1];
+    }
+    $decodificado = is_string($retorno) ? json_decode($retorno, true) : null;
+    if ($status !== 200) {
+        error_log('Falha na API da IA (HTTP ' . $status . '): ' . substr((string) $retorno, 0, 300));
+    }
 
-// Usa streams do PHP (file_get_contents) em vez de cURL, para não depender de extensão extra no XAMPP.
-$contexto = stream_context_create(['http' => [
-    'method' => 'POST',
-    'header' => ['content-type: application/json', 'x-api-key: ' . $chave, 'anthropic-version: 2023-06-01'],
-    'content' => $requisicao,
-    'timeout' => 40,
-    'ignore_errors' => true, // devolve o corpo mesmo em respostas 4xx/5xx, para podermos registrar o erro
-]]);
-$retorno = @file_get_contents($url, false, $contexto);
-$status = 0;
-if (isset($http_response_header[0]) && preg_match('#\s(\d{3})\s#', $http_response_header[0], $m)) {
-    $status = (int) $m[1];
+    return [$status, is_array($decodificado) ? $decodificado : []];
 }
 
-$resposta = is_string($retorno) ? json_decode($retorno, true) : null;
-$texto = $resposta['content'][0]['text'] ?? null;
+if ($provedor === 'gemini') {
+    // Gemini: o histórico usa os papéis "user" e "model", e o prompt vai em systemInstruction.
+    $modelo = ($config['GEMINI_MODEL'] ?? '') !== '' ? $config['GEMINI_MODEL'] : 'gemini-2.5-flash';
+    $url = $config['GEMINI_API_URL'] ?? "https://generativelanguage.googleapis.com/v1beta/models/{$modelo}:generateContent";
+    $geracao = ['maxOutputTokens' => 1024];
+    if (str_contains($modelo, 'flash')) {
+        $geracao['thinkingConfig'] = ['thinkingBudget' => 0]; // respostas diretas, sem gastar cota "pensando"
+    }
+    [$status, $resposta] = enviar_json($url, ['x-goog-api-key: ' . $chave], [
+        'systemInstruction' => ['parts' => [['text' => $sistema]]],
+        'contents' => array_map(fn (array $m): array => [
+            'role' => $m['role'] === 'assistant' ? 'model' : 'user',
+            'parts' => [['text' => $m['content']]],
+        ], $mensagens),
+        'generationConfig' => $geracao,
+    ]);
+    $partes = $resposta['candidates'][0]['content']['parts'] ?? [];
+    $texto = is_array($partes) ? implode('', array_map(fn ($p) => $p['text'] ?? '', $partes)) : '';
+} else {
+    $url = $config['ANTHROPIC_API_URL'] ?? 'https://api.anthropic.com/v1/messages';
+    [$status, $resposta] = enviar_json($url, ['x-api-key: ' . $chave, 'anthropic-version: 2023-06-01'], [
+        'model' => ($config['ANTHROPIC_MODEL'] ?? '') !== '' ? $config['ANTHROPIC_MODEL'] : 'claude-haiku-5-5',
+        'max_tokens' => 700,
+        'system' => $sistema,
+        'messages' => $mensagens,
+    ]);
+    $texto = $resposta['content'][0]['text'] ?? '';
+}
 
-if ($status !== 200 || !is_string($texto)) {
-    error_log('Falha na API da IA (HTTP ' . $status . '): ' . substr((string) $retorno, 0, 300));
+if ($status !== 200 || !is_string($texto) || trim($texto) === '') {
     erro_json('O assistente está indisponível no momento. Tente novamente em instantes.', 502);
 }
 

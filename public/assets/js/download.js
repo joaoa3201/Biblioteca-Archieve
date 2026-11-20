@@ -31,6 +31,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     titulo.textContent = `Download: ${iso.nome}`;
     resumo.textContent = `${iso.versao} • ${iso.arquitetura} • ${iso.tamanho_mb} MB`;
 
+    // Requisitos de hardware, para o usuário conferir antes de baixar.
+    const listaRequisitos = document.getElementById("listaRequisitos");
+    window.listarRequisitos(iso).forEach(([rotulo, valor]) => {
+      const item = document.createElement("li");
+      const negrito = document.createElement("strong");
+      negrito.textContent = `${rotulo}: `;
+      item.append(negrito, valor);
+      listaRequisitos.append(item);
+    });
+    document.getElementById("requisitosIso").hidden = false;
+
     if (!iso.tem_link_oficial) {
       resumo.textContent += " — o link oficial desta ISO ainda não está disponível.";
       return;

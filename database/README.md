@@ -45,4 +45,10 @@ O script é destinado à CLI e informa quantas imagens ISO há por família.
 
 ## Chatbot (assistente de IA)
 
-O assistente usa a API da Anthropic. Para ativá-lo, crie uma chave em https://console.anthropic.com e preencha `ANTHROPIC_API_KEY` em `config/.env` (veja `config/.env.example`). A chave é lida somente pelo PHP; sem ela, a tela do assistente avisa que ele está indisponível. O uso da API é cobrado à parte.
+O assistente funciona com o **Google Gemini**, que tem camada gratuita (mantém o projeto sem custo), ou com a API da Anthropic (paga).
+
+1. Crie uma chave gratuita em https://aistudio.google.com/apikey.
+2. Em `config/.env`, preencha `GEMINI_API_KEY=` com a chave (veja `config/.env.example`).
+3. Pronto: o PHP lê a chave e conversa com o Gemini. A chave nunca vai para o navegador.
+
+Para usar a Anthropic no lugar, preencha `ANTHROPIC_API_KEY`. Se houver as duas chaves, o Gemini é o padrão; use `IA_PROVEDOR=anthropic` para forçar a outra. Sem nenhuma chave, a tela do assistente avisa que ele está indisponível. A camada gratuita do Gemini tem limite de requisições por minuto e por dia, e por isso o site também limita cada visitante a 30 perguntas por hora.

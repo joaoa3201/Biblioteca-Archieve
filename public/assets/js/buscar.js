@@ -5,57 +5,29 @@
  */
 
 const camposResumo = [
-  { id: "memoria", label: "Memória", placeholder: "Digite aqui a memória" },
-  { id: "Mhzproc", label: "MHz/GHz do processador", placeholder: "Digite o MHz ou GHz do processador" },
-  { id: "Gerpro", label: "Geração do processador", placeholder: "Digite a geração do processador" },
-  { id: "modproc", label: "Modelo do processador", placeholder: "Selecione o modelo", tipo: "select" }
+  { id: "memoria", label: "Memória RAM", unidade: () => " GB", placeholder: "Não informada" },
+  // Valores a partir de 1000 são entendidos como MHz; abaixo disso, como GHz.
+  { id: "Mhzproc", label: "Velocidade do processador", unidade: (valor) => (Number(valor) >= 1000 ? " MHz" : " GHz"), placeholder: "Não informada" },
+  { id: "Gerpro", label: "Geração do processador", unidade: () => "ª geração", placeholder: "Não informada" },
+  { id: "modproc", label: "Marca do processador", placeholder: "Não informada", tipo: "select" }
 ];
 
 // Mantém só dígitos e ponto, para o campo aceitar apenas números.
+// A vírgula é aceita como separador decimal ("2,4" vira "2.4"), como se escreve no Brasil.
 function limparFormatoCampo(valor) {
-  return String(valor || "").replace(/[^0-9.]/g, "");
-}
-
-// Acrescenta a unidade ao valor mostrado no campo (ex.: 8 -> "8RAM").
-function formatarCampo(id, valor) {
-  const numero = limparFormatoCampo(valor);
-
-  if (!numero) return "";
-
-  const mapa = {
-    memoria: "RAM",
-    Mhzproc: "mhz",
-    Gerpro: "°g"
-  };
-
-  return `${numero}${mapa[id] || ""}`;
-}
-
-// Ao sair do campo, guarda o número puro em data-raw e exibe o valor com unidade.
-function aplicarFormatoFinalDoCampo(input) {
-  const numero = limparFormatoCampo(input.value.trim());
-
-  if (!numero) {
-    input.dataset.raw = "";
-    input.value = "";
-    return;
-  }
-
-  input.dataset.raw = numero;
-  input.value = formatarCampo(input.id, numero);
+  const texto = String(valor || "").replace(",", ".").replace(/[^0-9.]/g, "");
+  const [inteiro, ...decimais] = texto.split(".");
+  return decimais.length ? `${inteiro}.${decimais.join("")}` : inteiro;
 }
 
 function obterValorNumerico(input) {
-  const valor = input?.dataset?.raw ?? limparFormatoCampo(input?.value ?? "");
-  return Number(valor) || 0;
+  return Number(limparFormatoCampo(input?.value ?? "")) || 0;
 }
 
+// A unidade de cada campo aparece no rótulo da tela; aqui o campo só aceita números.
 document.querySelectorAll("#memoria, #Mhzproc, #Gerpro").forEach((input) => {
-  input.addEventListener("blur", () => aplicarFormatoFinalDoCampo(input));
   input.addEventListener("input", () => {
-    const valor = limparFormatoCampo(input.value);
-    input.dataset.raw = valor;
-    input.value = valor;
+    input.value = limparFormatoCampo(input.value);
   });
 });
 
@@ -81,10 +53,6 @@ function criarItem(rotulo, valor, classe) {
   return item;
 }
 
-function formatarMemoria(mb) {
-  return mb >= 1024 ? `${mb / 1024} GB` : `${mb} MB`;
-}
-
 // Monta um card por ISO. Usa textContent (nunca innerHTML) para escapar os dados vindos da API.
 function criarCard(iso) {
   const card = document.createElement("article");
@@ -104,8 +72,7 @@ function criarCard(iso) {
   info.className = "card-info";
   info.append(
     criarItem("Versão", `${iso.versao} (${iso.arquitetura})`),
-    criarItem("RAM mínima", formatarMemoria(iso.ram_min_mb)),
-    criarItem("RAM recomendada", formatarMemoria(iso.ram_rec_mb)),
+    ...window.listarRequisitos(iso).map(([rotulo, valor]) => criarItem(rotulo, valor)),
     criarItem(
       "Compatibilidade",
       iso.nivel === "ideal" ? "Roda com folga" : "Roda no limite",
@@ -146,9 +113,10 @@ function mostrarResumoFormulario() {
   const lista = document.querySelector("#resumoFinal .resumo-lista");
 
   lista.replaceChildren(
-    ...camposResumo.map(({ id, label, placeholder, tipo }) => {
+    ...camposResumo.map(({ id, label, unidade, placeholder, tipo }) => {
       const campo = document.getElementById(id);
-      const valor = tipo === "select" ? campo.value : (campo.dataset.raw || campo.value.trim());
+      let valor = tipo === "select" ? campo.value : campo.value.trim();
+      if (valor && unidade) valor = `${valor}${unidade(valor)}`;
 
       const item = document.createElement("div");
       item.className = "resumo-item";
@@ -175,10 +143,22 @@ async function validarFormulario() {
   const geracao = obterValorNumerico(geracaoInput);
   const modelo = modeloInput.value;
 
-  if (!memoriaGb || !mhz || !geracao || !modelo) {
-    if (!modelo) modeloInput.focus();
+  // Aviso acessível (role="alert"): leitores de tela anunciam o erro e o foco vai ao campo com problema.
+  const erro = document.getElementById("erroBusca");
+  const faltando = [
+    [memoriaGb, memoriaInput, "a memória RAM"],
+    [mhz, mhzInput, "a velocidade do processador"],
+    [geracao, geracaoInput, "a geração do processador"],
+    [modelo, modeloInput, "a marca do processador"]
+  ].find(([valor]) => !valor);
+
+  if (faltando) {
+    erro.textContent = `Preencha ${faltando[2]} para continuar.`;
+    erro.hidden = false;
+    faltando[1].focus();
     return;
   }
+  erro.hidden = true;
 
   mostrarResumoFormulario();
   mostrarMensagem("Buscando ISOs compatíveis...");
@@ -200,6 +180,7 @@ async function validarFormulario() {
 function limparResultados() {
   mostrarMensagem("Preencha as informações do computador para ver as ISOs que melhor se encaixam no seu perfil.");
   document.getElementById("resumoFinal").hidden = true;
+  document.getElementById("erroBusca").hidden = true;
   document.querySelector("#resumoFinal .resumo-lista").replaceChildren();
 }
 
