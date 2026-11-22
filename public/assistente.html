@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Assistente de IA | Biblioteca Archive</title>
+    <link rel="icon" href="assets/img/livro.png" type="image/png" />
+    <link rel="stylesheet" href="assets/css/style.css" />
+  </head>
+  <body class="container-fluid pagina-biblioteca pagina-assistente">
+    <main class="catalogo-principal">
+      <header class="cabecalho-biblioteca">
+        <span class="badge">Biblioteca Archive</span>
+        <h1>Assistente de IA</h1>
+        <p>Conte sobre o seu computador e eu indico um sistema compatível da biblioteca.</p>
+      </header>
+
+      <section class="chat" aria-label="Conversa com o assistente">
+        <div id="chatMensagens" class="chat-mensagens" role="log" aria-live="polite"></div>
+
+        <form id="chatForm" class="chat-form">
+          <label for="chatTexto" class="chat-rotulo">Sua mensagem</label>
+          <textarea id="chatTexto" rows="2" maxlength="1000" required
+            placeholder="Ex.: tenho um notebook com 2 GB de memória e quero usar para estudar"></textarea>
+          <button type="submit" id="chatEnviar" class="mini-btn">Enviar</button>
+        </form>
+      </section>
+    </main>
+    <script src="assets/js/menu.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/assistente.js"></script>
+  </body>
+</html>

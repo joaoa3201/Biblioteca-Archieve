@@ -1,0 +1,2 @@
+# Os arquivos .iso só podem ser entregues pelo PHP (api/baixar.php), nunca por acesso direto à pasta.
+Require all denied
